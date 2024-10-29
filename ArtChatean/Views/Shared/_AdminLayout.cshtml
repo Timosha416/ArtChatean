@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>ArtChâteau</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;            
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: black;
+            color: white;
+        }
+
+        /* КОНТЕЙНЕР ВМІСТУ СТОРІНКИ */
+        .main {
+            width: 100%;
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
+    @RenderSection("HeadEnd", required: false)
+</head>
+<body>    
+    <div class="main">
+        @RenderBody()
+    </div>
+    @RenderSection("BodyEnd", required: false)   
+</body>
+</html>

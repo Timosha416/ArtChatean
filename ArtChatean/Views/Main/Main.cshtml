@@ -1,0 +1,653 @@
+﻿@using ArtChatean.Models;
+@*
+
+*@
+@model IEnumerable<dynamic>
+@{
+    Layout = "_MainLayout";
+}
+@{
+    var friends = ViewBag.Friends as IEnumerable<dynamic>;
+}
+
+<div class="friends">
+    @foreach (var userFriend in friends)
+    {
+        var friend = userFriend.Friend;
+        if (friend != null)
+        {
+            <div class="story-circle">
+                <a href="@Url.Action("FriendProfile", "Main", new { id = friend.Id })">
+                    @if (friend.Image != null && friend.Image.Length > 0)
+                    {
+                        <img class="image-friend" src="data:image/jpeg;base64,@Convert.ToBase64String(friend.Image)" alt="Friend Image" />
+                    }
+                    else
+                    {
+                        <img class="image-friend" src="#" alt=""/>
+                    }
+                </a>
+            </div>
+        }
+    }
+</div>
+<div id="all-posts">
+    @Html.Partial("_FriendsPosts", Model)
+</div>
+@if (Model != null && Model.Any())
+{
+    <a href="" onclick="updatePosts(); return false;" class="load-more-posts">Upload 10 next posts</a>
+}
+else
+{
+    <div>No posts available.</div>
+}
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        bindCommentIcons();
+        bindLikeIcons();
+        bindSaveIcons();       
+    });
+    async function updatePosts() {
+        try {            
+            const currentPosts = document.querySelectorAll('.posts');
+            let count = currentPosts.length;             
+            
+            const response = await fetch(`/Main/GetPosts`, {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: count
+            });
+
+            // Перевіряємо, чи запит пройшов успішно
+            if (response.ok) {
+                const result = await response.text();
+                document.getElementById('all-posts').innerHTML += result;
+                bindCommentIcons();
+                bindLikeIcons();
+                bindSaveIcons();
+            } else {
+                console.error('Error updating posts:', response.statusText); 
+            }
+        } catch (error) {
+            console.error('Fetch error:', error); 
+        }
+    }
+    function addComment(pictureId) {
+        const commentInput = document.getElementById(`new-comment-${pictureId}`);
+        const commentText = commentInput.value.trim();
+
+        if (commentText === '') {
+            alert('Please enter a comment.'); // Перевірка на пустий коментар
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('PictureId', pictureId);
+        formData.append('Text', commentText);
+
+        fetch('/Main/AddComment', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Оновити блок з коментарями
+                    const commentsContainer = document.getElementById(`comments-${pictureId}`);
+                    const newCommentDiv = document.createElement('div');
+                    newCommentDiv.classList.add('comment');
+                    newCommentDiv.setAttribute('data-id', data.commentId);
+                    newCommentDiv.setAttribute('data-picture-id', pictureId);
+
+                    // Створюємо елемент для імені користувача
+                    const usernameSpan = document.createElement('span');
+                    usernameSpan.classList.add('username');
+                    usernameSpan.textContent = `${data.username} :`; // Безпечний спосіб вставки тексту
+
+                    // Створюємо елемент для тексту коментаря
+                    const commentTextSpan = document.createElement('span');
+                    commentTextSpan.classList.add('comment-text');
+                    commentTextSpan.textContent = commentText; // Безпечний спосіб вставки тексту
+
+                    // Створюємо елемент для видалення коментаря
+                    const deleteSpan = document.createElement('span');
+                    deleteSpan.classList.add('comment-delete');
+                    deleteSpan.textContent = '×'; // Символ для видалення
+                    deleteSpan.setAttribute('onclick', 'deleteComment(this)'); // Додаємо обробник події
+
+                    // Додаємо всі елементи до нового коментаря
+                    newCommentDiv.appendChild(usernameSpan);
+                    newCommentDiv.appendChild(commentTextSpan);
+                    newCommentDiv.appendChild(deleteSpan);
+
+                    // Додаємо новий коментар до сторінки                    
+                    commentsContainer.insertBefore(newCommentDiv, commentsContainer.querySelector('.new-comment'));
+
+                    // Оновлюємо кількість коментарів
+                    const commentCountElement = document.getElementById(`comment-count-${pictureId}`);
+                    commentCountElement.textContent = data.commentCount; // Змінюємо на нову кількість коментарів
+
+                    // Очистити поле введення
+                    commentInput.value = '';
+                } else {
+                    console.error('Error adding comment:', data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    function bindCommentIcons() {
+        document.querySelectorAll('.actions .commenticon').forEach(icon => {
+            icon.addEventListener('click', function () {
+                const commentsContainer = document.getElementById(`comments-${this.parentElement.getAttribute('data-picture-id')}`);
+                if (commentsContainer.classList.contains('visible')) {
+                    // Сховати коментарі з анімацією
+                    commentsContainer.classList.remove('visible');
+                    setTimeout(() => {
+                        commentsContainer.style.display = 'none'; // Сховати блок після анімації
+                    }, 300); // Час анімації
+                } else {
+                    // Показати коментарі з анімацією
+                    commentsContainer.style.display = 'flex';
+                    setTimeout(() => {
+                        commentsContainer.classList.add('visible');
+                    }, 10); // Затримка, щоб анімація спрацювала
+                }
+            });
+        });
+    }
+    function bindLikeIcons() {
+        document.querySelectorAll('.actions .like').forEach(icon => {
+            icon.addEventListener('click', function () {
+                const pictureId = this.parentElement.getAttribute('data-picture-id');
+                const isLiked = this.classList.contains('fas');
+                const userId = this.parentElement.getAttribute('data-user-id');
+                const userName = this.parentElement.getAttribute('data-user-name');
+                const userListContainer = document.getElementById(`user-list-${pictureId}`);
+                fetch('/Main/Like/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: pictureId
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Оновити кількість лайків
+                            const likeCountElement = this.nextElementSibling;
+                            if (data.likeCount === 0) {
+                                likeCountElement.textContent = ""; // Якщо 0, то порожньо
+                            } else {
+                                likeCountElement.textContent = data.likeCount; // Якщо більше 0, показуємо кількість лайків
+                            }
+
+                            // Змінюємо клас іконки лайка
+                            if (isLiked) {
+                                // Якщо лайк був, видаляємо його
+                                this.classList.remove('fas'); // Видаляємо заповнене серце
+                                this.classList.add('far'); // Додаємо пусте серце
+                                const userLinkToRemove = document.getElementById(`user-like-${pictureId}-${userId}`);
+                                if (userLinkToRemove) {
+                                    userLinkToRemove.remove(); // Видаляємо елемент з DOM
+                                }
+                                // userListContainer.style.display = 'block';                                
+                            } else {
+                                // Якщо лайк не був, ставимо його
+                                this.classList.remove('far');
+                                this.classList.add('fas');
+                                var userLink = document.createElement('div');
+                                userLink.id = `user-like-${pictureId}-${userId}`;
+                                userLink.innerHTML = `
+                                                <a href="/Main/FriendProfile/${userId}" class="user-link">
+                                                        ${userName}
+                                            </a>
+                                        `;
+                                userLink.addEventListener('click', function (event) {
+                                    event.stopPropagation(); // Запобігаємо події від пропагування до батьківських елементів
+                                });
+                                userListContainer.appendChild(userLink);
+                                userListContainer.style.display = 'block';
+                                setTimeout(() => {
+                                    
+                                    userListContainer.classList.add('visible');
+                                }, 10);
+                            }
+                        } else {
+                            console.error('Error updating like count:', data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        });
+
+        document.querySelectorAll('.icon.like').forEach(icon => {
+            icon.addEventListener('mouseenter', function () {
+                const pictureId = this.getAttribute('data-picture-like-id');
+                const userListContainer = document.getElementById(`user-list-${pictureId}`);
+                if (!userListContainer.innerHTML) { // Перевірка, чи список вже не завантажений
+                    fetch('/Main/GetUsers', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: pictureId // Правильне передавання даних через POST
+                    })
+                        .then(response => response.json())
+                        .then(users => {
+                            userListContainer.innerHTML = '';
+                            if (users.length > 0) {
+                                users.forEach(user => {
+                                    var userLink = document.createElement('div');
+                                    userLink.id = `user-like-${pictureId}-${user.id}`;
+                                    userLink.innerHTML = `
+                                        <a href="/Main/FriendProfile/${user.id}" class="user-link">
+                                            ${user.fullName}
+                                        </a>
+                                    `;
+                                    userLink.addEventListener('click', function (event) {
+                                        event.stopPropagation(); // Запобігаємо події від пропагування до батьківських елементів
+                                    });
+                                    userListContainer.appendChild(userLink);
+                                    userListContainer.style.display = 'block';
+                                    setTimeout(() => {
+                                        userListContainer.classList.add('visible');
+                                    }, 10);
+                                });
+
+                            } else {
+                                userListContainer.style.display = 'none'; // Сховати, якщо немає результатів
+                                userListContainer.innerHTML = '';
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                } else {
+                    userListContainer.style.display = 'block';
+                }
+            });
+
+            icon.addEventListener('mouseleave', function () {
+                const pictureId = this.getAttribute('data-picture-like-id');
+                const userListContainer = document.getElementById(`user-list-${pictureId}`);
+
+                userListContainer.classList.remove('visible');
+
+                setTimeout(() => {
+                    userListContainer.innerHTML = '';
+                    userListContainer.style.display = 'none';
+                }, 300); // Час анімації
+            });
+        });
+    }   
+
+    function bindSaveIcons() {
+        document.querySelectorAll('.actions .save').forEach(icon => {
+            icon.addEventListener('click', function () {
+                const pictureId = this.parentElement.getAttribute('data-picture-id');
+                const isSaved = this.classList.contains('fas');
+                fetch('/Main/Save/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: pictureId
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Змінюємо клас іконки лайка
+                            if (isSaved) {
+                                // Якщо лайк був, видаляємо його
+                                this.classList.remove('fas'); // Видаляємо заповнене серце
+                                this.classList.add('far'); // Додаємо пусте серце
+                            } else {
+                                // Якщо лайк не був, ставимо його
+                                this.classList.remove('far');
+                                this.classList.add('fas');
+                            }
+                        } else {
+                            console.error('Error updating like count:', data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        });
+    }
+    function deleteComment(element) {
+        // Отримуємо найближчий батьківський елемент з класом 'comment'
+        const commentElement = element.closest('.comment');
+
+        // Отримуємо ID коментаря з атрибуту 'data-id'
+        const commentId = commentElement.getAttribute('data-id');
+        const pictureId = commentElement.getAttribute('data-picture-id');
+
+        // Виконуємо запит на видалення
+        fetch('/Main/DeleteComment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: commentId
+        })
+            .then(response => {
+                if (response.ok) {   
+                    const commentCountElement = document.getElementById(`comment-count-${pictureId}`);                    
+                    const currentCount = parseInt(commentCountElement.textContent, 10);
+                    commentCountElement.textContent = currentCount - 1;
+                    commentElement.remove();
+                } else {
+                    alert('An error occurred while deleting the comment.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the comment.');
+            });
+    }
+</script>
+@section HeadEnd {
+    <style>
+        .main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ВІДОБРАЖЕННЯ ДРУЗІВ */
+        .friends {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            gap: 30px;
+            width: 80%;
+            margin: 30px 0 30px 0;
+        }
+
+        .story-circle {
+            width: 100px;
+            height: 100px;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        .image-friend {
+            width: 100px;
+            height: 100px;
+            background-color: lightgrey;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ВІДОБРАЖЕННЯ ПОСТІВ */
+        #all-posts{
+            width: 60%;
+        }
+        
+        .posts {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            justify-content: center;
+            width: 100%;
+            gap: 20px;
+            margin: 20px 0 20px 0;
+            padding-bottom: 30px;
+            border-bottom: 2px solid white;
+        }       
+
+        /* ЗАГОЛОВОК ПОСТА */
+        .post-header {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 10px;
+        }
+
+        .image-placeholder {
+            width: 50px;
+            height: 50px;
+            background-color: lightgrey;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin: 0 10px 0 10px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .username-time {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .username {
+            font-weight: bold;
+        }
+
+        .time {
+            text-align: left;
+            color: darkgrey;
+            font-size: 12px;
+        }
+
+        /* КАРТИНКА ПОСТА */
+        .post-image {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+            .post-image img {
+                width: 100%;
+                height: auto;
+                display: block;
+                border: 2px solid white;
+            }
+
+        /* НИЗ ПОСТА */
+        .post-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+        }       
+
+            .actions .icon {
+                cursor: pointer;
+            }
+                .actions .icon.save {
+                    margin-left: auto;
+                    margin-right: 0; 
+                }
+
+        .icon.like {
+            cursor: pointer;
+            position: relative;
+        }
+
+            .icon.like.fas.fa-heart {
+                color: red; 
+            }        
+
+        .user-list {
+            width: 150px;
+            position: absolute;
+            bottom: 100%; /* Список з'являється безпосередньо під іконкою */
+            left: 0;
+            /* border: 1px solid white; */
+            z-index: 1000;
+            background-color: #333333CC;
+            display: none; /* Список буде прихованим за замовчуванням */
+            color:white;
+            font-family: 'Inter', sans-serif;
+            font-weight:normal;
+            padding: 10px;
+            border-radius: 10px;
+            opacity: 0.3;
+            transform: translateY(0);
+            transition: opacity 0.8s ease, transform 0.3s ease;
+        }
+
+            .user-list.visible {
+                display: flex;
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .user-list a:hover {
+                text-decoration: underline;
+            }
+
+            .user-list a {
+                text-decoration: none;
+                color: inherit;
+                font-size: 12px;
+            }
+
+            .user-list div {
+                padding: 4px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+            }
+
+        .like-count{
+            font-size: 18px;
+        }
+
+        .comment-count{
+            font-size: 18px;
+        }
+
+        .caption {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+        }
+
+            .caption .username {
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            .caption .caption-text {
+                ;
+                font-size: 14px;
+            }
+
+       /*  COMMENTS */
+        .comments {
+            display: flex;
+            flex-direction: column;            
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+            .comments.visible {
+                display: flex;
+                opacity: 1; 
+                transform: translateY(0);
+            }
+
+        .comment {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+
+        }
+
+            .comment:hover{
+                background-color: #333333;
+            }
+
+        .comment-delete {
+            flex-self: right;
+            font-size: 14px;
+            cursor: pointer;
+            color: red;
+            margin-left: auto;
+            margin-right: 5px;
+        }
+
+            .comment-delete:hover,
+            .comment-delete:focus {                
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+        .username {
+            font-weight: bold;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .username-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .username-link:hover {
+                text-decoration: underline; /* Підкреслення при наведенні */
+            }
+
+        .comment-text {
+            font-size: 14px;
+        }
+
+        .new-comment {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+            .new-comment input {
+                flex-grow: 1;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                margin-right: 5px;
+                font-size: 14px;
+            }
+
+            .new-comment button {
+                padding: 8px 12px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+                .new-comment button:hover {
+                    background-color: #0056b3;
+                }
+
+        .load-more-posts {
+            width: 100%;
+            display: inline-block;
+            margin-bottom: 10px;
+            color: #007bff; /* Синій колір, як посилання */
+            text-decoration: none; /* Без підкреслення */
+            text-align: center;
+        }
+
+            .load-more-posts:hover {
+                text-decoration: underline; /* Підкреслення при наведенні */
+            }
+    </style>
+}
+

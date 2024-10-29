@@ -1,0 +1,245 @@
+﻿@model List<ArtChatean.Models.Painting>
+
+@{
+    Layout = "_MainLayout";
+    ViewBag.Title = "Gallery";
+}
+<!-- Era Selection -->
+
+<h1 class="gallery-title">Gallery</h1>
+<div class="vector"></div>
+<a class="era-title" href="@Url.Action("SelectEra", "Gallery")">@ViewBag.SelectedEra.Name era</a>
+
+<!-- Gallery of Paintings -->
+<div class="gallery-wrapper">
+    <span class="scroll-number left">@ViewBag.SelectedEra.StartYear</span>
+    <div class="gallery">
+        @foreach (var painting in Model)
+        {
+            <div class="painting">
+                <img src="data:image/png;base64,@Convert.ToBase64String(painting.Image)" alt="@painting.Title" onclick="openModal(this, '@painting.Title', '@painting.Author', '@painting.YearCreated')" />
+                <p class="painting-author">@painting.Author</p>
+                <p class="painting-title">@painting.Title</p>
+            </div>
+        }
+    </div>
+    <span class="scroll-number right">@ViewBag.SelectedEra.EndYear</span>
+</div>
+
+<!-- Modal for Enlarged Image -->
+<div id="myModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="modalImg">
+    <div class="modal-caption">
+        <p id="modalTitle"></p>
+        <p id="modalAuthor"></p>
+        <p id="modalYear"></p>
+    </div>
+</div>
+
+@section HeadEnd {
+    <!-- CSS styles -->
+    <style>
+        /* General Page Styling */
+        body {
+            background-color: #000; /* Dark background */
+            color: #fff; /* White text */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Gallery title */
+        .gallery-title {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 36px;
+            line-height: 30px;
+            margin-left: 40px;
+            margin-bottom: 8px;
+        }
+
+        .era-title {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 24px;
+            margin-left: 40px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+        }
+
+            .era-title:hover {
+                font-weight: bold;
+            }
+
+        .vector {
+            text-align: center;
+            border: 1px solid #D9D9D9;
+            width: 203px;
+            height: 0px;
+            margin-bottom: 8px;
+            margin-left: 40px;
+        }
+
+        /* Painting Gallery */
+        .gallery-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: end;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 30px;
+            padding: 20px;
+            scroll-behavior: smooth; /* Smooth scrolling */
+            align-items: center;
+        }
+
+            .gallery::-webkit-scrollbar {
+                width: 15px;
+            }
+
+            .gallery::-webkit-scrollbar-thumb {
+                background: white;
+                border-radius: 10px;
+            }
+
+        .painting {
+            flex: 0 0 auto; /* To make sure images don't shrink */
+            max-width: 24%;
+            text-align: center;
+        }
+
+            .painting img {
+                max-width: 100%;
+                height: auto;
+                cursor: pointer;
+                transition: transform 0.3s ease; /* Animation for hover */
+            }
+
+                .painting img:hover {
+                    transform: scale(1.03); /* Slight zoom on hover */
+                }
+
+        .painting-title {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 20px;
+            line-height: 27px;
+            text-align: center;
+            margin: 10px 0 5px;
+        }
+
+        .painting-author {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 16px;
+            color: white; /* Slightly grey text for author */
+        }
+
+        .scroll-number {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 20px;
+            margin: 10px 10px -3px 10px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+            .modal.show {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%; /* Ensure image fits within screen */
+            max-height: 80vh; /* Ensure the image does not exceed viewport height */
+            object-fit: contain;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: #bbb;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+        .modal-caption {
+            text-align: center;
+            padding: 10px;
+        }
+
+            .modal-caption p {
+                font-family: 'Inter';
+                font-style: normal;
+                font-weight: 500;
+                font-size: 20px;
+                color: white;
+                margin: 5px 0;
+            }
+    </style>
+
+    <!-- JavaScript -->
+    <script>
+        function openModal(imgElement, title, author, year) {
+            var modal = document.getElementById("myModal");
+            var modalImg = document.getElementById("modalImg");
+            var modalTitle = document.getElementById("modalTitle");
+            var modalAuthor = document.getElementById("modalAuthor");
+            var modalYear = document.getElementById("modalYear");
+
+            modal.style.display = "block";
+            setTimeout(() => {
+                modal.classList.add("show"); // Add class for fade-in animation
+            }, 10); // Small timeout to allow CSS transition to trigger
+
+            modalImg.src = imgElement.src;
+            modalTitle.innerHTML = title;
+            modalAuthor.innerHTML = "Author: " + author;
+            modalYear.innerHTML = "Year: " + year;
+        }
+
+        function closeModal() {
+            var modal = document.getElementById("myModal");
+            modal.classList.remove("show"); // Trigger fade-out animation
+            setTimeout(() => {
+                modal.style.display = "none"; // Ensure modal is hidden after fade-out
+            }, 500); // Wait for fade-out transition to complete
+        }
+    </script>
+}

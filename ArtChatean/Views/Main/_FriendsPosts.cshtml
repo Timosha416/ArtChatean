@@ -1,0 +1,98 @@
+﻿@using ArtChatean.Models
+@model IEnumerable<dynamic>
+
+@functions {
+    public string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        if (timeSpan.TotalDays > 1)
+            return $"{(int)timeSpan.TotalDays} days ago";
+        if (timeSpan.TotalHours > 1)
+            return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalMinutes > 1)
+            return $"{(int)timeSpan.TotalMinutes} minutes ago";
+        return "just now";
+    }
+}
+
+@foreach (var picture in Model)
+{
+    <div class="posts">
+        <div class="post-header">
+            <a href="@Url.Action("FriendProfile", "Main", new { id = picture.UserId })">
+                @if (picture.UserImage != null && picture.UserImage.Length > 0)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.UserImage)" class="image-placeholder" alt="" />
+                }
+                else
+                {
+                    <img class="image-placeholder" src="#" alt="" />
+                }
+            </a>
+            <div class="username-time">
+                <span class="username">
+                    <a href="@Url.Action("FriendProfile", "Main", new { id = picture.UserId })" class="username-link">
+                        @picture.UserFullName
+                    </a>
+                </span>
+                <span class="time">@GetTimeAgo(picture.CreatedAt)</span>
+            </div>
+        </div>
+        <div class="post-image">
+            @if (picture.Image != null && picture.Image.Length > 0)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="" />
+            }
+            else
+            {
+                <img src="#" alt="" />
+            }
+        </div>
+        <div class="post-footer">
+            <div class="actions" data-picture-id="@picture.Id" data-user-id="@ViewBag.UserId" data-user-name="@ViewBag.UserName">
+                <span class="icon like @(picture.IsLikedByCurrentUser ? "fas fa-heart" : "far fa-heart")" data-picture-like-id="@picture.Id">
+                    <div class="user-list" id="user-list-@picture.Id" style="display:none;"></div>
+                </span>
+                <span class="like-count">@(picture.LikeCount == 0 ? "" : picture.LikeCount)</span>
+                <span class="icon commenticon far fa-comment" onclick="toggleComments('@picture.Id')"></span>
+                <span class="comment-count" id="comment-count-@picture.Id">@(picture.CommentCount == 0 ? "" : picture.CommentCount)</span>
+                @* <span class="icon share fas fa-paper-plane"></span> *@
+                <span class="icon save @(picture.IsSavedByCurrentUser ? "fas fa-bookmark" : "far fa-bookmark")"></span>
+            </div>
+            @if (!string.IsNullOrEmpty(picture.Caption))
+            {
+                <div class="caption">
+                    <span class="username">
+                        <a href="@Url.Action("FriendProfile", "Main", new { id = picture.UserId })" class="username-link">
+                            @picture.UserFullName
+                        </a>:
+                    </span>
+                    <span class="caption-text">@picture.Caption</span>
+                </div>
+            }
+        </div>
+        <!-- Список коментарів -->
+        <div class="comments" id="comments-@picture.Id" style="display:none;">
+            @foreach (var comment in picture.Comments)
+            {
+                <div class="comment" data-id="@comment.Id" data-picture-id="@picture.Id">
+                    <span class="username">
+                        <a href="@Url.Action("FriendProfile", "Main", new { id = comment.UserCommentId })" class="username-link">
+                            @comment.UserCommentFullName
+                            </a>:
+                    </span>
+                    <span class="comment-text">@comment.Text</span>
+                    @if (@comment.UserId == ViewBag.UserId)
+                    {
+                        <span class="comment-delete" onclick="deleteComment(this)">&times;</span>
+                    }
+                </div>
+            }
+            <!-- Поле для введення нового коментаря -->
+            <div class="new-comment">
+                <input type="text" placeholder="Add a comment..." id="new-comment-@picture.Id" />
+                <button onclick="addComment('@picture.Id')">Post</button>
+            </div>
+        </div>
+    </div>
+}

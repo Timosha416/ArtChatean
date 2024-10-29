@@ -1,0 +1,62 @@
+﻿@using ArtChatean.Models;
+
+@model List<Picture>
+@{    
+    var pictureLikes = Model
+      .Select(p => new
+      {
+          PictureId = p.Id,
+          LikeCount = p.Likes.Count() 
+      })
+      .ToList();
+
+    // Створюємо словник для швидкого доступу до кількості лайків
+    var likeCountDict = pictureLikes.ToDictionary(l => l.PictureId, l => l.LikeCount);
+}
+<div class="button-shop">
+    <a href="@Url.Action("Main", new { section = "AddEditPicture" })" class="add-product-btn">View my pictures</a>
+    <a href="@Url.Action("Main", new { section = "SoldPictures" })" class="add-product-btn">Sold pictures</a>
+</div>
+
+<div class="pagination" name="page">
+    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+    {
+        <a href="javascript:void(0);"
+           onclick="updateGallery(@i);"
+           class="@(ViewBag.CurrentPage == i ? "active" : "")">@i</a>
+    }
+</div>
+<div class="profile-gallery">
+    @foreach (var picture in Model)
+    {
+        <div class="gallery-item">
+            <div class="gallery-overlay">
+                @if (picture.Image != null && picture.Image.Length > 0)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Subject" />
+                }
+                else
+                {
+                    <img src="#" alt="Profile Image" />
+                }
+                <div class="overlay" onclick="redirectToPicture('@Url.Action("Picture", "Shop", new { id = picture.Id })')">
+                    <div class="actions" data-picture-id="@picture.Id">
+                        <span class="like-icon @(picture.Likes.Any(l => l.UserId == ViewBag.currentUserId) ? "fas fa-heart" : "far fa-heart")" onclick="toggleLike(event, this)"></span>
+                        <span class="like-count">@likeCountDict.GetValueOrDefault(picture.Id, 0)</span>
+                        <span class="buy-icon @(picture.PictureOrders.Any(po => po.Order.CustomerId == ViewBag.currentUserId) ? "disabled" : "") fa @(picture.PictureOrders.Any(po => po.Order.CustomerId == ViewBag.currentUserId) ? "fa-check" : "fa-shopping-cart")"
+                              title="@(picture.PictureOrders.Any(po => po.Order.CustomerId == ViewBag.currentUserId) ? "Added to order" : "Buy")"
+                              data-id="@picture.Id"
+                              onclick="buyPicture(this); return false;">
+                           @*  <i class=""></i> *@
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="gallery-info">
+                <p style="float: left;">@picture.Title</p>
+                <p style="float: right;">$@picture.Price?.ToString("0.00")</p>
+            </div>
+
+        </div>
+    }
+</div>  

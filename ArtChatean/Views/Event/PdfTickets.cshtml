@@ -1,0 +1,176 @@
+﻿@using ArtChatean.ViewModels
+
+@model PdfTicketsViewModel
+
+@{
+    Layout = "_MainLayout";
+    var timeSlot = ViewBag.TimeSlot;
+}
+
+<div class="title-block">
+    <h1>Thank you!</h1>
+    <p>Here are your tickets:</p>
+</div>
+
+<div class="tickets-container">
+    @for (int i = 0; i < Model.TicketCount; i++)
+    {
+        <div class="ticket">
+            <div class="ticket-header">
+                <h2>Ticket</h2>
+                <a href="@Url.Action("DownloadTicket", "Event", new { timeSlotId = timeSlot.Id })" class="download-link">
+                    <img src="~/images/download.png" alt="Download" class="download-icon" />
+                </a>
+            </div>
+            <img src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.ArtistBigPhoto))" alt="Artist Big Photo" class="artist-photo" />
+            <p class="artist-name"><strong>@Model.ArtistName</strong></p>
+            <p class="event-description">@Model.EventDescription</p>
+            <p class="time">Дата події: @Model.TicketDate</p>
+            <p class="time">Час події: @Model.TicketTime</p>
+            <img src="~/images/screenshot.png" alt="Barcode" class="barcode" />
+        </div>
+    }
+</div>
+
+@section HeadEnd {
+<style>
+    /* Загальні стилі сторінки */
+    /* body {
+        font-family: 'Inter';
+        font-style: normal;
+        background-color: #fff;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    } */
+    .main {
+        width: 100%;
+        /* background: white; */
+    }
+    .title-block {
+        text-align: center;
+        padding: 40px 0;
+        /* background-color: #fff; */
+        margin-bottom: 40px;
+    }
+
+        .title-block h1 {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-size: 25px;
+            line-height: 30px;
+            /* color: #000000; */
+            margin: 0;
+        }
+
+        .title-block p {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-size: 25px;
+            line-height: 30px;
+           /*  color: #000000; */
+            margin-top: 10px;
+        }
+
+    /* Стилі для квитків */
+    .tickets-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        padding: 0 20px;
+    }
+
+    .ticket {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .ticket:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .ticket-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .ticket h2 {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        font-size: 25px;
+        line-height: 30px;
+        color: #000000;
+        margin: 0;
+    }
+
+    .download-link {
+        text-decoration: none;
+    }
+
+    .download-icon {
+        width: 30px;
+        height: 30px;
+        transition: opacity 0.3s ease;
+    }
+
+    .download-link:hover .download-icon {
+        opacity: 0.7;
+    }
+
+    .artist-photo {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .artist-name {
+        font-size: 2.5em;
+        color: #000000;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        line-height: 30px;
+        margin-bottom: 10px;
+    }
+
+    .time {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        font-size: 20px;
+        line-height: 30px;
+        color: #000000;
+    }
+
+    .event-description {
+        font-size: 1.1em;
+        color: #7f8c8d;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        line-height: 30px;
+        margin-bottom: 20px;
+    }
+
+    .barcode {
+        width: 200px;
+        height: auto;
+        margin-top: 20px;
+    }
+</style>
+}

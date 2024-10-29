@@ -1,0 +1,244 @@
+﻿@using ArtChatean.Models;
+@*
+
+*@
+@model User
+@{
+    Layout = "_MainLayout";
+}
+@{
+    var currentUser = ViewBag.User as User;
+}
+
+<div class="profile-header">
+    @if (Model.Image != null && Model.Image.Length > 0)
+    {
+        <img id="image-preview" class="image-placeholder" src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Image)" alt="Profile Image" />
+    }
+    else
+    {
+        <img id="image-preview" class="image-placeholder" src="#" alt="Profile Image" style="display:none;"  />
+    }
+
+    <div class="fullname">
+        <h1>@Model.FullName</h1>
+    </div>
+    <div class="follow-button">
+        @if (!currentUser.UserFriends.Any(f => f.FriendId == Model.Id))
+        {
+            <button class="follow followButton" onclick="toggleFollow('@Model.Id')">Follow</button>
+        }
+        else
+        {
+            <button class="unfollow followButton" onclick="toggleFollow('@Model.Id')">Do not follow</button>
+        }
+        <a href="@Url.Action("MainChat", "Chat", new { receiverId = Model.Id })" class="chat-link-button">
+            <button class="chatButton">Send Message</button>
+        </a>
+    </div>
+    <div class="profile-stats">
+        <div class="stat">
+            <span class="stat-label">Total Likes</span>
+            <span class="stat-value">@ViewBag.TotalLikes</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Followers</span>
+            <span class="stat-value">@ViewBag.FriendCount</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Top Rank</span>
+            <span class="stat-value">№ @ViewBag.Rank</span>
+        </div>
+    </div>
+
+</div>
+
+<div class="profile-gallery">
+    @if (Model.Pictures != null && Model.Pictures.Any())
+    {
+        @foreach (var picture in Model.Pictures)
+        {
+            <div class="gallery-item" id="picture-@picture.Id">
+                @if (picture.Image != null && picture.Image.Length > 0)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Subject" class="picture-link" data-id="@picture.Id" data-user-id="@picture.UserId" />
+                }
+                else
+                {
+                    <img src="#" alt="" class="picture-link" data-id="@picture.Id" data-user-id="@picture.UserId" />
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p>No pictures available.</p>
+    }
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const images = document.querySelectorAll('.picture-link');
+        images.forEach(img => {
+            img.addEventListener('click', function () {
+                const pictureId = this.getAttribute('data-id');
+                const userId = this.getAttribute('data-user-id'); 
+                window.location.href = `/Main/FriendMain/${userId}?pictureId=${pictureId}`;
+            });
+        });
+    });
+    function toggleFollow(friendId) {
+        fetch('/Main/ToggleFollow', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: friendId
+        })
+            .then(response => {
+                if (response.ok) {
+                    var button = document.querySelector('.followButton');
+                    // Перевірка поточного класу кнопки та зміна на зворотний
+                    if (button.classList.contains('follow')) {
+                        button.classList.remove('follow');
+                        button.classList.add('unfollow');
+                        button.innerText = 'Do not follow';
+                    }
+                    else {
+                        button.classList.remove('unfollow');
+                        button.classList.add('follow');
+                        button.innerText = 'Follow';
+                    }
+                }
+                else {
+                    alert("Failed");
+                }
+                    })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            });
+    }
+</script>
+
+@section HeadEnd {
+    <style>
+        .main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        /* ВЕРХ ПРОФАЙЛА */
+        .profile-header {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        /* ФОТО */
+        .image-placeholder {
+            width: 120px;
+            height: 120px;
+            background-color: lightgrey;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .fullname h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        /* КНОПКИ */
+        .follow-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .follow, .unfollow, .chatButton {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+        }
+
+        .follow, .chatButton {
+            background-color: #28a745; /* Green for Follow */
+        }
+
+            .follow:hover, .chatButton:hover {
+                background-color: #218838;
+            }
+
+        .unfollow {
+            background-color: #dc3545; /* Red for Do not follow */
+        }
+
+            .unfollow:hover {
+                background-color: #c82333;
+            }        
+
+        /* СТАТИСТИКА */
+        .profile-stats {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+        .stat-value {
+            display: block;
+        }
+
+        /* ГАЛЕРЕЯ */
+        .profile-gallery {
+            display: flex;
+            width: 90%;
+            flex-wrap: wrap;
+            justify-content: left;
+            gap: 10px;
+            margin: 20px 0 20px 0;
+        }
+
+        .gallery-item {
+            width: calc(33.333% - 10px);
+            box-sizing: border-box;
+            position: relative;
+            aspect-ratio: 1 / 1;
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+            .gallery-item:hover{
+                opacity: 0.5;
+            }
+
+            .gallery-item img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+                border: 2px solid white;
+            }
+    </style>
+}
+

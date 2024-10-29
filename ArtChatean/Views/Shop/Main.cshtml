@@ -1,0 +1,891 @@
+﻿@using ArtChatean.Models;
+@*
+
+*@
+@model List<Picture>
+
+@{
+    Layout = "_MainLayout";
+    var pictures = ViewBag.ValueForFilters as List<Picture>;
+}
+
+<div class="filters">
+    <h2>Filters</h2>
+
+    <!-- User Name Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Author <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            <input type="text" id="username" class="username" name="username" placeholder="Enter author" />
+        </div>
+    </div>    
+
+    <!-- Style Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Style <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            @foreach (var style in pictures.Select(p => p.Style).Distinct().OrderBy(style => style))
+            {
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="style-@style" name="style" value="@style" />
+                    <label for="style-@style">@style</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Subject Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Subject <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            @foreach (var subject in pictures.Select(p => p.Subject).Distinct().OrderBy(subject => subject))
+            {
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="subject-@subject" name="subject" value="@subject" />
+                    <label for="subject-@subject">@subject</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Medium Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Medium <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            @foreach (var medium in pictures.Select(p => p.Medium).Distinct().OrderBy(medium => medium))
+            {
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="medium-@medium" name="medium" value="@medium" />
+                    <label for="medium-@medium">@medium</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Material Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Material <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            @foreach (var material in pictures.Select(p => p.Material).Distinct().OrderBy(material => material))
+            {
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="material-@material" name="material" value="@material" />
+                    <label for="material-@material">@material</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Price Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Price <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            <div class="filter-price">
+                <label for="price-from">From</label>
+                <input type="number" id="price-from" name="price-from" placeholder="0" min="0">
+                <label for="price-to">To</label>
+                <input type="number" id="price-to" name="price-to" placeholder="0" min="0">
+                <span>$</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Size Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Size <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            @foreach (var size in pictures.Select(p => p.Size).Distinct().OrderBy(size => size))
+            {
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="size-@size" name="size" value="@size" />
+                    <label for="size-@size">@size</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Orientation Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Orientation <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            @foreach (var orientation in pictures.Select(p => p.Orientation).Distinct().OrderBy(orientation => orientation))
+            {
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="orientation-@orientation" name="orientation" value="@orientation" />
+                    <label for="orientation-@orientation">@orientation</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Color Filter -->
+    <div class="filter-section">
+        <h3 class="filter-title" onclick="toggleFilter(this)">
+            Color <span class="toggle-sign">+</span>
+        </h3>
+        <div class="filter-content">
+            @foreach (var color in pictures.Select(p => p.Color).Distinct().OrderBy(color => color))
+            {
+                <div class="checkbox-filter">
+                    <input type="checkbox" id="color-@color" name="color" value="@color" />
+                    <label for="color-@color">@color</label>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="gallery">    
+    @if (ViewBag.SelectedSection == "AddEditPicture")
+    {
+        @Html.Partial("_AddEditPicture", Model)
+    }
+    else if (ViewBag.SelectedSection == "SoldPictures")
+    {
+        @Html.Partial("_SoldPictures", Model)
+    }
+    else
+    {
+        @Html.Partial("_PictureGallery", Model)
+    }   
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        const checkboxes = document.querySelectorAll('.checkbox-filter input[type="checkbox"]');
+        const priceFrom = document.getElementById('price-from');
+        const priceTo = document.getElementById('price-to');
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                updateGallery(1);
+            });
+        });
+
+        let priceFromTimeout;
+        let priceToTimeout;
+
+        priceFrom.addEventListener('input', function () {
+            clearTimeout(priceFromTimeout);
+            priceFromTimeout = setTimeout(function () {
+                updateGallery(1);
+            }, 500);
+        });
+
+        priceTo.addEventListener('input', function () {
+            clearTimeout(priceToTimeout);
+            priceToTimeout = setTimeout(function () {
+                updateGallery(1);
+            }, 500);
+        });
+
+        var userNameInput = document.getElementById('username');
+        var userNameTimeout;
+
+        userNameInput.addEventListener('input', function () {
+            clearTimeout(userNameTimeout);
+            userNameTimeout = setTimeout(function () {
+                updateGallery(1);
+            }, 500);
+        });
+
+        const currentUrl = window.location.href;
+
+        if (currentUrl.includes('AddEditPicture')) {
+            return;
+        }
+        if (currentUrl.includes('SoldPictures')) {
+            return;
+        }
+        else {
+            setTimeout(function () {
+                updateGallery(1);
+            }, 300);
+
+            setTimeout(function () {
+                openActiveFilters();
+            }, 300);
+        }
+    });
+
+    function openActiveFilters() {
+        const filterSections = document.querySelectorAll('.filter-section');
+
+        filterSections.forEach(section => {
+            const filterTitle = section.querySelector('.filter-title');
+            const content = section.querySelector('.filter-content');
+
+            const checkboxes = content.querySelectorAll('input[type="checkbox"]');
+            const hasActiveCheckbox = checkboxes.length > 0 && Array.from(checkboxes).some(checkbox => checkbox.checked);
+
+            const userNameInput = content.querySelector('#username');
+            const hasActiveInput = userNameInput && userNameInput.value.trim() !== '';
+
+            const priceFrom = content.querySelector('#price-from');
+            const priceTo = content.querySelector('#price-to');
+            const hasActivePrice = (priceFrom && priceFrom.value.trim() !== '') || (priceTo && priceTo.value.trim() !== '');
+
+            if (hasActiveCheckbox || hasActiveInput || hasActivePrice) {
+                toggleFilter(filterTitle);
+            }
+        });
+    }
+
+    function toggleFilter(element) {
+        const content = element.nextElementSibling;
+        const sign = element.querySelector('.toggle-sign');
+
+        if (content.style.display === "none" || content.style.display === "") {
+            content.style.display = "block";
+            sign.textContent = "-";
+        } else {
+            content.style.display = "none";
+            sign.textContent = "+";
+        }
+    }    
+
+    function updateGallery(page) {
+        // Функція для отримання всіх вибраних значень чекбоксів для конкретного фільтру
+        function getSelectedValues(name) {
+            return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(checkbox => checkbox.value);
+        }
+       
+        function getPriceRange() {
+            const priceFrom = document.getElementById('price-from').value || 0; 
+            const priceTo = document.getElementById('price-to').value || Infinity; 
+            return [priceFrom, priceTo];
+        }
+
+        const userName = document.getElementById('username').value || ''; 
+
+        const filters = {
+            style: getSelectedValues('style'),
+            subject: getSelectedValues('subject'),
+            medium: getSelectedValues('medium'),
+            material: getSelectedValues('material'),
+            price: getPriceRange(),
+            size: getSelectedValues('size'),
+            orientation: getSelectedValues('orientation'),
+            color: getSelectedValues('color'),
+            userName: userName,
+            page: page 
+        };
+
+        fetch('@Url.Action("Filter", "Shop")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(filters)
+        })
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector('.gallery').innerHTML = html;
+                const newUrl = `/Shop?section=PictureGallery`;
+                window.history.pushState({ path: newUrl }, '', newUrl);
+            })
+            .catch(error => console.error('Помилка:', error));
+    }
+
+    function buyPicture(element) {
+        var pictureId = element.getAttribute('data-id');
+
+        // Виконуємо запит на сервер без підтвердження
+        fetch('/Order/AddToOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: pictureId
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Блокуємо кнопку після успішного додавання до кошику
+                    element.classList.add('disabled');
+                    element.title = "Added to cart";
+                    element.classList.remove('fa-shopping-cart');
+                    element.classList.add('fa-check');
+                } else {
+                    alert("Failed to add picture to order.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred.");
+            });
+
+        // Припиняємо поширення події (якщо потрібно)
+        event.stopPropagation();
+    }
+    function redirectToPicture(url) {
+        window.location.href = url;
+    }    
+    function toggleLike(event, icon) {
+        event.stopPropagation(); // Зупиняємо поширення події
+
+        const pictureId = icon.parentElement.getAttribute('data-picture-id');
+        const isLiked = icon.classList.contains('fas');
+
+        fetch('/Shop/Like/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: pictureId // Передаємо дані у форматі JSON
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Оновити кількість лайків
+                    const likeCountElement = icon.nextElementSibling;
+                    likeCountElement.textContent = data.likeCount;
+                    if (isLiked) {
+                        // Якщо лайк був, видаляємо його
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    } else {
+                        // Якщо лайк не був, ставимо його
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    }
+                } else {
+                    console.error('Error updating like count:', data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+
+@section HeadEnd {
+    <style>
+        .main {            
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        /* БЛОК ФІЛЬТРИ */
+        .filters {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            margin: 70px 20px 20px 20px;
+        }
+
+        h2 {
+            font-size: 28px;
+            padding: 10px;
+            margin: 0;
+        }
+
+        h3 {
+            font-size: 24px;
+            padding: 10px;
+            margin: 0;
+        }
+        
+        .filter-section {
+            margin: 0 0 5px 30px;
+        }
+
+        .filter-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+            .filter-title .toggle-sign {
+                font-size: 24px;
+                font-weight: bold;
+            }
+
+        .filter-content {
+            display: none;
+            margin: 10px 0 0 30px;
+        }
+
+        .checkbox-filter {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+            .checkbox-filter input[type="checkbox"] {
+                appearance: none;
+                -webkit-appearance: none; /* Safari and Chrome */
+                width: 18px;
+                height: 18px;
+                border: 2px solid white;
+                border-radius: 50%;
+                background-color: #111;
+                cursor: pointer;
+                margin-right: 10px;
+                transition: all 0.3s ease;
+            }
+
+                .checkbox-filter input[type="checkbox"]:checked {
+                    background-color: white;
+                    border-color: white;
+                }
+
+                    .checkbox-filter input[type="checkbox"]:checked + label {
+                        color: green;
+                    }
+
+            .checkbox-filter label {
+                font-size: 14px;
+                cursor: pointer;
+            }
+
+        .filter-price {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+            .filter-price input {
+                width: 60px;
+                padding: 5px;
+                border-radius: 5px;
+            }
+
+        /* КНОПКА ДЛЯ ВІДОБРАЖЕННЯ ДОДАВАННЯ КАРТИНИ В МАГАЗИН */
+        .button-shop{
+            display: flex;
+            justify-content: right;
+            align-items: center;
+            gap: 20px;
+        }
+        .add-product-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-decoration: none; 
+            align-self: flex-end;
+        }
+
+            .add-product-btn:hover {
+                background-color: #218838;
+            }
+
+        /* МАГАЗИН */
+        .gallery {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 20px;
+        }
+
+        /* ПАЛАГІНАЦІЯ */
+        .pagination {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 10px;
+        }
+            .pagination a {
+                padding: 5px 10px;
+                text-decoration: none;
+                border: 1px solid white;
+                color: white;
+            }
+
+                .pagination a:hover {
+                    background-color: #666666;
+                }
+
+                .pagination a.active {
+                    font-weight: bold;
+                    background-color: #28a745;
+                    border-color: white;
+                }
+
+        /* КАРТИНИ МАГАЗИНУ */
+        .profile-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: left;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .gallery-item {
+            width: calc(33.333% - 10px);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            aspect-ratio: 1 / 1;
+           
+        }
+
+        .gallery-overlay {
+            position: relative;
+            height: 90%;
+        }
+
+            .gallery-overlay img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+                border: 2px solid white;
+            }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            display: flex;
+            justify-content: right;
+            align-items: flex-start;
+            padding: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover .overlay {
+            opacity: 1;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+        }
+
+        .buy-icon, .like-icon {
+            color: black;
+            font-size: 20px;
+            text-decoration: none;
+            background: white;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }     
+            .buy-icon:hover {
+                background: rgba(0, 255, 0, 0.7); 
+            }
+            .buy-icon.disabled {               
+                cursor: not-allowed;
+                pointer-events: none;
+            }     
+
+            .like-icon:hover {
+                background: rgba(255, 0, 0, 0.7);
+            }
+
+        .actions .fas {
+            color: red;
+        }
+
+        .like-count {
+            font-size: 20px;
+        }
+
+        /* ІНФОРМАЦІЯ ПРО КАРТИНУ */
+        .gallery-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            height: 10%;
+        }
+            .gallery-info p {
+                margin: 5px;
+                padding: 0px;
+            }
+        /* ФОРМИ ДЛЯ ДОДАВАННЯ І РЕДАГУВАННЯ КАРТИН */
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 0 auto;
+            border: 1px solid white;
+            border-radius: 10px;
+            background-color: #ffffff;
+        }
+
+        .form-header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 10px 10px 0 10px;
+        }
+
+        .inside {
+            display: flex;
+            flex: 2;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .save-btn {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: #28a745; 
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+            .save-btn:hover {
+                background-color: #218838; 
+            }
+
+        .delete-btn {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+            .delete-btn:hover {
+                background-color: #c82333; 
+            }
+
+        form {
+            background-color: black;
+            border: 1px solid white;
+        }
+
+        .disabled-form {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .form-body {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 20px;
+            margin: 0px 10px 0 10px;               
+        }
+
+        .text-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: left;
+            gap: 10px;            
+        }
+
+            .text-info input {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+
+        .form-image {
+            flex: 1;
+            border-radius: 6px;
+            border: 1px solid white;
+            background-color: #f0f0f0;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            border: 1px solid white;
+            border-radius: 6px;
+            object-fit: cover;
+            color: black;
+        }
+
+        .form-footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 0 10px 10px 10px;
+        }
+
+        .inside label {
+            font-size: 22px;
+            font-weight: bold;;
+        }
+
+        .form-footer select {
+            flex: 1;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid white;
+            border-radius: 5px;
+            background-color: #fff;
+            appearance: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+            select:focus {
+                border-color: #007bff;
+                outline: none;
+            }
+
+        input {
+            padding: 10px;
+            border: 1px solid white;
+            border-radius: 6px;
+            font-size: 18px;
+            background-color: white;
+            transition: border-color 0.3s ease;
+            color: black;
+        }
+
+            input:focus {
+                border-color: #007bff;
+                outline: none;
+            }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            border: 1px solid white;
+            font-size: 18px;
+            background-color: #f8f8f8;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            color: black;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+            textarea:focus {
+                border-color: #007bff;
+                outline: none;
+            }
+
+        .checkbox-gallery {
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+            .checkbox-gallery label {
+                font-size: 16px;
+                margin-right: 10px; 
+                font-weight: normal;
+                font-style: italic;
+            }
+
+            .checkbox-gallery input[type="checkbox"] {
+                width: 20px; 
+                height: 20px;
+                accent-color: #d0f0c0; 
+                cursor: pointer; 
+            }
+
+                .checkbox-gallery input[type="checkbox"]:hover {
+                    background-color: #e0e0e0; 
+                }
+
+        .disabled-checkbox {
+            pointer-events: none;
+        }
+
+        /* БЛОК ПРОДАНИХ КАРТИН */
+        .image-details {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            border: 2px solid white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .username-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .username-link:hover {
+                text-decoration: underline; /* Підкреслення при наведенні */
+            }
+
+        /* ЗОБРАЖЕННЯ */
+        .main-image {
+            flex: 1;
+            background-color: #ccc;
+            aspect-ratio: 1 / 1;
+        }
+
+            .main-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+                border: 2px solid white;
+            }
+        /* ДЕТАЛІ ЗОБРАЖЕННЯ */
+        .details {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: left;
+            gap: 10px;
+        }
+
+        .details p {
+            margin: 0;
+            padding: 0;
+            font-size: 24px;
+        }
+
+    </style>
+}

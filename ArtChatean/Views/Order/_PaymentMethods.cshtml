@@ -1,0 +1,103 @@
+﻿@model ArtChatean.Models.User
+
+
+<div class="menu-title">Payment Information</div>
+    <a href="#" class="add-new-payment">+ add new payment method</a>
+
+    <form action="/Order/SavePayment" method="post">
+        @if (Model?.Payments != null)
+        {
+            <input type="hidden" name="Id" value="@Model.Payments.FirstOrDefault()?.Id" />
+            <input type="hidden" name="UserId" value="@Model.Payments.FirstOrDefault()?.UserId" />
+            <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input type="text" id="cardNumber" name="CardNumber" placeholder="Enter your card number" value="@Model.Payments.FirstOrDefault()?.CardNumber" class="form-control" required maxlength="19" />
+            </div>
+            <div class="form-group">
+                <label for="cardHolderName">Card Holder Name</label>
+                <input type="text" id="cardHolderName" name="CardHolderName" placeholder="Enter the card holder's name" value="@Model.Payments.FirstOrDefault()?.CardHolderName" class="form-control" required maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="expiryDate">Expiry Date</label>
+                <input type="text" id="expiryDate" name="ExpiryDate" placeholder="MM/YYYY" value="@Model.Payments.FirstOrDefault()?.ExpiryDate.ToString("MM/yyyy")" class="form-control" required maxlength="7" />
+            </div>
+            <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" name="CVV" placeholder="Enter your CVV" value="@Model.Payments.FirstOrDefault()?.CVV" class="form-control" required maxlength="3" />
+            </div>
+            <button type="submit" class="save-payment">Save Payment</button>
+        }
+        else
+        {
+            <div>No payment information available.</div>
+        }
+    </form>
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info">@TempData["Message"]</div>
+    }
+
+
+<script>
+    $(document).ready(function () {
+        $('#cardNumber').mask('0000-0000-0000-0000');
+    });
+    $(document).ready(function () {
+        $('#expiryDate').mask('00/0000');
+    });
+</script>
+
+<style>
+    .add-new-payment {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 90%;
+            padding: 10px 0 10px 10px;
+            font-size: 14px;
+            border: 1px solid white;
+            border-radius: 4px;
+        }
+
+    .alert-info {
+        margin: 0 auto;
+        margin-top: 20px;
+    }
+
+    .save-payment {
+        width: 20%;
+        padding: 10px;
+        border: none;
+        background-color: white;
+        color: black;
+        font-size: 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        margin: 0 auto;
+        margin-top: 20px;
+    }
+</style>

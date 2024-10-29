@@ -1,0 +1,93 @@
+﻿@model ArtChatean.Models.User
+
+<div class="menu-title">Main shipping address</div>
+<a href="#" class="add-new-address">+ add new shipping address</a>
+
+<form action="/Order/SaveAddress" method="post">
+    @if (Model?.Addresses != null)
+    {
+        <input type="hidden" name="Id" value="@Model.Addresses.FirstOrDefault()?.Id" />
+        <input type="hidden" name="UserId" value="@Model.Addresses.FirstOrDefault()?.UserId" />
+        <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" name="Country" placeholder="Enter your country" value="@Model.Addresses.FirstOrDefault()?.Country" class="form-control" required maxlength="50" />
+        </div>
+        <div class="form-group">
+            <label for="postalCode">Postal Code</label>
+            <input type="text" id="postalCode" name="PostalCode" placeholder="Enter your postal code" value="@Model.Addresses.FirstOrDefault()?.PostalCode" class="form-control" required maxlength="10" />
+        </div>
+        <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" name="City" placeholder="Enter your city" value="@Model.Addresses.FirstOrDefault()?.City" class="form-control" required maxlength="50" />
+        </div>
+        <div class="form-group">
+            <label for="street">Street</label>
+            <input type="text" id="street" name="Street" placeholder="Enter your street" value="@Model.Addresses.FirstOrDefault()?.Street" class="form-control" />
+        </div>
+        <button type="submit" class="save-profile">Save Address</button>
+    }
+    else
+    {
+        <div>No address information available.</div>
+    }
+</form>
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info">@TempData["Message"]</div>
+}
+
+
+<style>    
+    .add-new-address {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    form{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 90%;
+            padding: 10px 0 10px 10px;
+            font-size: 14px;
+            border: 1px solid white;
+            border-radius: 4px;
+        }
+
+    .alert-info {
+        margin: 0 auto;
+        margin-top: 20px;
+    }   
+
+    .save-profile {
+        width: 20%;
+        padding: 10px;
+        border: none;
+        background-color: white;
+        color: black;
+        font-size: 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        margin: 0 auto;
+        margin-top: 20px;
+    }
+</style>

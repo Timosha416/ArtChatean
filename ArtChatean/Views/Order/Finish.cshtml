@@ -1,0 +1,165 @@
+﻿@using ArtChatean.Models
+@model User
+@{
+    Layout = "_MainLayout";
+}
+@{
+    var logo = Model.Orders.LastOrDefault().PictureOrders.FirstOrDefault().Picture;
+}
+
+<div class="login-image">
+    @if (logo.Image != null && logo.Image.Length > 0)
+    {
+        <img src="data:image/jpeg;base64,@Convert.ToBase64String(logo.Image)" alt="" />
+    }
+    else
+    {
+        <img src="#" alt="Profile Image" />
+    }
+</div>
+<div class="order">
+    <h1>Thank you for your order!</h1>
+    <p>You can track your order in your personal account.</p>
+    <h2>Your Order</h2>
+    @if (Model?.Orders != null && Model.Orders.Any())
+    {
+        var incompleteOrder = Model.Orders.LastOrDefault();
+
+        if (incompleteOrder != null)
+        {
+            @foreach (var pictureOrder in incompleteOrder.PictureOrders)
+            {
+                var picture = pictureOrder.Picture;
+                <div class="purchase-item">
+                    <div class="image">
+                        @if (picture.Image != null && picture.Image.Length > 0)
+                        {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Title" />
+                        }
+                        else
+                        {
+                            <img src="#" alt="Profile Image" />
+                        }
+                    </div>
+                    <div class="info">
+                        <div>@picture.Title</div>
+                        <div>@incompleteOrder.Number</div>
+                        <div>Author: @picture.User.FullName</div>
+                    </div>
+                    <div class="price">@picture.Price$</div>
+                </div>
+            }
+
+            <div class="totals">
+                <div>
+                    <div>Subtotal</div>
+                    <div>@incompleteOrder.PictureOrders.Sum(po => po.Picture.Price)$</div>
+                </div>
+                <div>
+                    <div>Shipping</div>
+                    <div>10$</div>
+                </div>
+                <div>
+                    <div><strong>Total</strong></div>
+                    <div><strong>@(incompleteOrder.PictureOrders.Sum(po => po.Picture.Price) + 10)$</strong></div>
+                </div>
+            </div>            
+        }
+        else
+        {
+            <div>No active orders found.</div>
+        }
+    }
+    else
+    {
+        <div>No orders found.</div>
+    }
+</div>
+
+@section HeadEnd {
+    <style>
+        .main {
+            display: flex;
+            height: 90vh;
+        }
+
+        .login-image {
+            flex: 1;
+            background: #ddd;
+            height: 90%;            
+            margin: 20px;
+        }
+
+        .login-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .order {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+            margin: 20px;
+            height: 90%;
+        }
+        h1, h2, p {
+            margin: 0;
+            padding: 0;
+        }
+        .image-placeholder {
+            flex: 1;
+            background-color: #e0e0e0;
+            margin: 20px;
+        }        
+
+        .purchase-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .image {
+            flex: 1;
+        }
+
+            .image img {
+                width: 100px;
+                height: auto;
+                border-radius: 5px;
+            }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            flex: 4;
+            align-items: left;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .price {
+            font-weight: bold;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: right;
+        }
+
+        /* СУМА */
+        .totals {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid white;
+            padding-top: 10px;
+        }
+
+            .totals div {
+                display: flex;
+                justify-content: space-between;
+            }
+    </style>
+}

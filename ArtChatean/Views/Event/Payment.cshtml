@@ -1,0 +1,467 @@
+﻿@using ArtChatean.Models
+@using System.Globalization
+@model List<TicketTariff>
+
+@{
+    Layout = "_MainLayout";
+    var timeSlot = ViewBag.TimeSlot as EventTimeSlot;
+    var eventDetails = ViewBag.EventDetails as Event;
+    var totalPrice = (decimal)ViewBag.TotalPrice;
+    var totalTickets = (int)ViewBag.TotalTickets;
+    var selectedTickets = ViewBag.SelectedTickets as List<Tuple<string, int, decimal>>;
+    int artistId = eventDetails.ArtistId;
+}
+
+<div class="title-block">
+    <h1 class="page-title">Payment</h1>
+</div>
+
+<div class="payment-container">
+    <!-- Ліва частина сторінки -->
+    <div class="payment-info">
+        <nav class="breadcrumb">
+            <a href="@Url.Action("Events", "Event", new { artistId = artistId })" class="date-time">Date and time</a>
+            <a href="@Url.Action("TicketSelection", "Event", new { timeSlotId = timeSlot.Id })" class="your-ticket">› Your ticket</a>
+            <span class="payment">› Payment</span>
+        </nav>
+        <h1>Payment</h1>
+        <div class="vector"></div>
+
+        <div class="border-text">
+            <p>By proceeding with the payment, you accept the general sales conditions and the handling of the below data by our gallery.</p>
+        </div>
+
+        <p class="low-h">Pay by card</p>
+        <form method="post" action="@Url.Action("ValidateAndPay", "Event", new { timeSlotId = timeSlot.Id })" onsubmit="return validateForm(this)">
+            <input type="hidden" name="totalPrice" value="@totalPrice" />
+            <input type="hidden" name="totalTickets" value="@totalTickets" />
+
+            <div>
+                <label for="cardNumber">Card number</label>
+                <input type="text" id="cardNumber" class="cardNumber" name="cardNumber" pattern="\d{16}" minlength="16" maxlength="16" required placeholder="XXXX XXXX XXXX XXXX" oninput="this.value = this.value.replace(/\D/g, '')" title="Please enter 16 digits.">
+            </div>
+
+            <div class="expiry-cvv-container">
+                <div>
+                    <input type="text" id="cardExpiry" class="cardExpiry" name="cardExpiry" pattern="\d{2}/\d{4}" placeholder="MM/YYYY" required maxlength="7" oninput="formatDate(this)" title="Please enter a date.">
+                </div>
+                <div>
+                    <input type="text" id="cardCvv" class="cardCvv" name="cardCvv" pattern="\d{3}" minlength="3" maxlength="3" required placeholder="XXX" oninput="this.value = this.value.replace(/\D/g, '')" title="Please enter 3 digits.">
+                </div>
+            </div>
+
+            <div>
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" class="firstName" name="firstName" required placeholder="type your first name" title="Please enter your name.">
+            </div>
+            <div>
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" class="lastName" name="lastName" required placeholder="type your last name" title="Please enter your last name.">
+            </div>
+            <div>
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="type your email" title="Please enter your email.">
+            </div>
+
+            <div class="checkbox">
+                <input type="checkbox" id="newsletter" name="newsletter">
+                <label for="newsletter">I would like to receive news and information on upcoming events organized by the Name of Gallery.</label>
+            </div>
+
+            <form method="post" action="@Url.Action("PdfTickets", "Event", new { timeSlotId = timeSlot.Id })">
+                <div class="pay-button-container">
+                    <button type="submit" id="payment-btn" class="payment-btn">Validate and pay</button>
+                </div>
+            </form>
+        </form>
+    </div>
+
+    <!-- Права частина сторінки -->
+    <div class="order-summary">
+        <div class="order-summary-block">
+            <h2>@eventDetails.Artist.FullName</h2>
+            <div class="vector2"></div>
+            <p>@eventDetails.EventDate.ToString("dd MMMM, yyyy", CultureInfo.GetCultureInfo("en-US"))</p>
+            <p>@timeSlot.Time.ToString("HH:mm")</p>
+            <div class="vector2"></div>
+            <table class="ticket-table">
+                <tbody>
+                    @foreach (var ticket in selectedTickets)
+                    {
+                        <tr>
+                            <td style="padding: 12px 12px 12px 0px;" class="1td">@ticket.Item1</td> <!-- Назва тарифу -->
+                            <td style="width: 50px;" class="2td">@($"x{ticket.Item2}")</td> <!-- Кількість -->
+                            <td style="width: 50px; padding: 12px 0px 12px 0px;" class="2td">@ticket.Item3.ToString("€0.00")</td> <!-- Загальна ціна -->
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="vector2"></div>
+            <p class="total-price">
+                <strong>Total</strong>
+                <span>@totalPrice.ToString("€0.00")</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Блок для кнопки -->
+
+
+<script>
+    function validateForm(form) {
+        const inputs = form.querySelectorAll('input[type="text"], input[type="email"]');
+        for (let input of inputs) {
+            if (input.value.trim() === "") {
+                alert("Please fill in all data");
+                input.focus();
+                return false; // Не дозволяє відправити форму
+            }
+        }
+        return true; // Дозволяє відправити форму, якщо всі поля заповнені
+    }
+
+    function formatDate(input) {
+        let value = input.value.replace(/\D/g, ''); // Видаляємо всі нецифрові символи
+        if (value.length >= 2) {
+            input.value = value.substring(0, 2) + '/' + value.substring(2, 6); // Додаємо "/"
+        } else {
+            input.value = value; // Повертаємо тільки цифри
+        }
+    }
+</script>
+
+<!-- CSS -->
+@section HeadEnd {
+<style>
+    @* body {
+        background-color: #fff;
+    }
+ *@
+    .main {
+        width: 100%;
+        /* background: white; */
+    }
+    .title-block {
+        background-image: url('/images/Beutiful picture.jpg');
+        padding: 25px;
+        height: 300px;
+        text-transform: uppercase;
+        margin: 0px -10px 20px -10px;
+        display: flex;
+        justify-content: center; /* горизонтальне центрування */
+        align-items: center; /* вертикальне центрування */
+    }
+
+    .page-title {
+        text-align: center;
+        margin: 20px 0;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 46px;
+        color: #000000;
+        transition: transform 0.5s ease, font-size 0.5s ease;
+    }
+                .page-title:hover {
+                transform: scale(1.1);
+                font-size: 52px; /* Збільшення шрифту при наведенні */
+            }
+    .payment-container {
+        display: flex;
+        justify-content: space-between;
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .payment-info, .order-summary {
+        width: 48%;
+        padding: 22px;
+        border-radius: 8px;
+        /* background-color: #fff; */
+    }
+
+        .payment-info p {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 19px;
+            /* color: #000000; */
+        }
+        .payment-info .low-h {
+                font-family: 'Inter';
+                font-style: normal;
+                font-weight: 400;
+                font-size: 20px;
+                line-height: 24px;
+                /* color: #000000; */
+        }
+
+    .expiry-cvv-container {
+        display: flex;
+        justify-content: space-between; /* Вирівнювання полів */
+        margin-bottom: 15px; /* Відступ між рядками */
+        margin: 0px 0px 0px;
+    }
+
+        .expiry-cvv-container > div {
+            width: calc(50% - 11px); /* Половина ширини з відступом */
+        }
+
+    .payment-info h1 {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 25px;
+        line-height: 30px;
+        /* color: #000000; */
+        margin-bottom: 20px;
+    }
+
+    .order-summary h2 {
+        text-transform: uppercase;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        font-size: 25px;
+        line-height: 30px;
+       /*  color: #000000; */
+        margin-bottom: 20px;
+    }
+
+    .order-summary p {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 17px;
+        /* color: #000000; */
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        /* color: #D9D9D9; */
+    }
+
+    input[type="text"], input[type="email"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #D9D9D9;
+        border-collapse: collapse;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+       /*  color: #000000; */
+    }
+
+    input[type="email"] {
+        margin-bottom: 15px;
+        border-radius: 10px;
+    }
+
+    .cardExpiry, .cardCvv, .firstName, .lastName {
+        margin-bottom: 15px;
+        border-radius: 10px;
+    }
+
+    .cardExpiry {
+        border-radius: 10px 0px 0px 10px;
+        margin-right: 0px;
+    }
+
+    .cardCvv {
+        border-radius: 0px 10px 10px 0px;
+        margin-left: 0px;
+    }
+
+    .cardNumber {
+        margin-bottom: 0px;
+        border-radius: 10px;
+    }
+
+    input[type="placeholder"] {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 19px;
+        color: #D9D9D9;
+    }
+
+    .checkbox {
+        display: flex;
+        align-items: flex-start; /* Забезпечує вирівнювання зверху */
+        margin-top: 10px;
+        text-align: left;
+    }
+
+        .checkbox label {
+            margin-left: 10px;
+            text-align: left; /* Текст буде вирівняний зліва */
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 17px;
+            /* color: #000000; */
+        }
+
+        .checkbox input[type="checkbox"] {
+            margin-top: 3px; /* Для вирівнювання з текстом */
+            border: 1px solid #D9D9D9;
+        }
+
+    .pay-button-container {
+        display: flex;
+        justify-content: right;
+        margin-top: 20px;
+    }
+
+    .payment-btn {
+        margin-top: 10px;
+        padding: 10px 40px;
+        border: 1px solid white;
+        background-color: transparent;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 17px;
+        color: white;
+        cursor: pointer;
+        border-radius: 40px;
+        text-decoration: none;
+        outline: none;
+        float: right; /* Вирівнює кнопку вправо */
+        width: fit-content; /* Ширина за розміром контенту */
+        transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+    }
+
+
+        .payment-btn:hover {
+            background-color: white;
+            color: #000000;
+        }
+
+    table {
+        width: 100%;
+        margin-top: 10px;
+        border-collapse: collapse;
+    }
+
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table th {
+            /* background-color: #f0f0f0; */
+        }
+
+    .date-time {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        color: grey;
+        cursor: pointer;
+        text-decoration: none; /* Прибирає підкреслення */
+    }
+
+    .your-ticket {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        color: grey;
+        cursor: pointer;
+        text-decoration: none; /* Прибирає підкреслення */
+    }
+
+    .payment {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        color: white;
+    }
+
+    .vector {
+        text-align: center;
+        border: 1px solid #D9D9D9;
+        width: 70%;
+        height: 0px;
+        margin: -15px 0px 40px 0px;
+    }
+    
+    .vector2 {
+        text-align: center;
+        border: 1px solid #D9D9D9;
+        width: 100%;
+        height: 0px;
+    }
+
+    .border-text {
+        border: 2px solid #D9D9D9;
+        border-radius: 10px;
+        padding: 7px;
+        margin-bottom: 50px;
+    }
+    
+    .border-text p {
+        margin: 5px 0px;
+    }
+
+    .order-summary-block {
+        border: 2px solid #D9D9D9;
+        border-radius: 10px;
+        padding: 15px 40px;
+        margin-top: 50px;
+        margin-left: 30px;
+    }
+
+    .ticket-table {
+        border: none;
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .ticket-table td {
+            border: none;
+            padding: 12px;
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-size: 14px;
+            line-height: 17px;
+            /* color: #000000; */
+        }
+        .ticket-table .1td {
+            text-align: left;
+        }
+
+        .ticket-table .2td {
+            text-align: right;
+        }
+
+    .total-price {
+        display: flex;
+        justify-content: space-between; /* Вирівнює елементи по протилежним краям */
+    }
+</style>
+}

@@ -1,0 +1,740 @@
+﻿@using ArtChatean.Models
+@model List<ChatMessage>
+@{
+    ViewBag.Title = "Main Chat";
+    var friends = ViewBag.Friends as IEnumerable<dynamic>;    
+}
+@{
+    Layout = "_MainLayout";
+}
+<div class="user-list">
+    <h2>Chats</h2>
+    <div class="users-chat">
+    @if (friends != null || friends.Any())
+    {      
+            @foreach (var friend in friends)
+            {                
+                var isActive = friend.Id == ViewBag.ReceiverId ? "active-user-item" : "";
+                <a href="@Url.Action("MainChat", "Chat", new { receiverId = friend.Id })" class="username-link">
+                <div class="user-item @isActive" id="user-item-@friend.Id">
+                    @if (friend.Image != null && friend.Image.Length > 0)
+                    {
+                        
+                            <img class="image-friend" src="data:image/jpeg;base64,@Convert.ToBase64String(friend.Image)" alt="Friend Image" />
+                       
+                    }
+                    else
+                    {
+                            <img class="image-friend" src="#" alt="" />
+                    }
+                    <div class="friend-info">                        
+                            <span class="friend-name">@friend.FullName</span>
+                        <span class="last-message" id="last-message-@friend.Id">@friend.LastMessage</span>
+                    </div>
+                    @if (friend.UnreadCount > 0)
+                    {
+                        <div class="unread-count">
+                            <span id="unread-@friend.Id">@friend.UnreadCount</span> <!-- Непрочитані повідомлення в кружечку -->
+                        </div>
+                    }
+                </div>
+                </a>
+            }
+    }
+    </div>
+</div>
+
+<div class="chat-window" id="chat-window">
+    @if (friends != null && friends.Any())
+    {
+        var friend = friends.FirstOrDefault(m => m.Id == ViewBag.ReceiverId);
+
+        if (friend != null)
+        {
+            <div class="user-item">
+                @if (friend.Image != null && friend.Image.Length > 0)
+                {
+                    <img class="image-friend" src="data:image/jpeg;base64,@Convert.ToBase64String(friend.Image)" id="toCopy" alt="Friend Image" data-id="@friend.Id" />
+                }
+                else
+                {
+                    <img class="image-friend" src="#" alt="No Image Available" />
+                }
+                <div class="friend-info">
+                    <span class="friend-name">@friend.FullName</span>
+                </div>
+                <button class="delete-button" data-id="@friend.Id" onclick="deleteChat(this)">Delete chat</button>
+            </div>            
+        }
+    }
+    <div id="friend-item" class="friend-item">
+        @Html.Partial("_ChatWithUser", Model)
+    </div>
+</div>
+
+<script>
+    window.onload = function () {
+        var messagesContainer = document.getElementById('messages');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }           
+        removeUnreadCountAfterDelay();
+        initializeEmojiPicker();
+    };
+    function initializeEmojiPicker() {        
+        const button = document.querySelector('#emoji-button');
+
+        const picker = new EmojiButton();
+
+        button.addEventListener('click', () => {
+            picker.togglePicker(button);
+
+        });
+
+        picker.on('emoji', emoji => {
+            document.querySelector('#messageInput').value += emoji;
+        });
+
+    }
+
+    function deleteChat(element) {
+        var friendId = element.getAttribute('data-id');
+        var confirmed = confirm("Are you sure you want to delete this chat?");
+        if (confirmed) {
+            fetch('/Chat/DeleteChat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: friendId // передаємо дані у форматі JSON
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Видаляємо елемент чату з DOM
+                        var chatItem = document.getElementById(`user-item-${friendId}`);
+                        if (chatItem) {
+                            chatItem.remove();
+                        }
+
+                        // Перевіряємо, чи залишилися інші чати
+                        var remainingChats = document.querySelectorAll('.user-item');
+                        if (remainingChats.length > 0) {
+                            // Отримуємо перший елемент і знаходимо відповідне посилання
+                            var firstChatItem = remainingChats[0]; // перший елемент з класом .user-item
+                            var firstLink = firstChatItem.closest('.username-link'); // шукаємо найближчий батьківський <a> з класом .username-link
+
+                            // Якщо посилання існує, переходимо за ним
+                            if (firstLink) {
+                                window.location.href = firstLink.href; // перенаправляємо користувача на посилання
+                            }
+                        }
+                    } else {
+                        alert('Failed to delete the chat.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
+
+    async function updateChat() {
+        try {
+            var imageElement = document.getElementById('toCopy');
+            var receiverId = imageElement.getAttribute('data-id');
+
+            // Отримуємо кількість вже відображених повідомлень
+            const currentMessages = document.querySelectorAll('.message');
+            let count = currentMessages.length; // Визначаємо count за кількістю повідомлень
+
+            // Збільшуємо count на 20 для запиту
+            count += 20;
+            console.log('Receiver ID:', receiverId);
+            console.log('Current message count:', currentMessages.length);
+            console.log('New count:', count);
+
+            // Формуємо об'єкт даних для відправки
+            const data = {
+                receiverId: receiverId,
+                count: count
+            };
+
+            // Формуємо URL з параметрами
+            const response = await fetch(`/Chat/UpdateChatPartial`, {
+                method: 'POST', // Використовуємо POST запит
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data) // Перетворюємо дані в JSON-формат
+            });
+
+            // Перевіряємо, чи запит пройшов успішно
+            if (response.ok) {
+                const result = await response.text(); // Отримуємо відповідь у текстовому форматі
+                
+                document.getElementById('friend-item').innerHTML = result; // Оновлюємо вміст елемента messages
+            } else {
+                console.error('Error updating chat:', response.statusText); // Виводимо помилку у консоль
+            }
+        } catch (error) {
+            console.error('Fetch error:', error); // Виводимо помилку у консоль
+        }
+    }
+
+    function removeUnreadCountAfterDelay() {
+        var imageElement = document.getElementById('toCopy');    
+        var friendId = imageElement.getAttribute('data-id'); 
+        var unreadCountSpan = document.getElementById(`unread-${friendId}`);
+        var unReadedMessageSpan = document.getElementById(`unReadedMessageSpan`);
+        setTimeout(function() {
+        if (unreadCountSpan && unreadCountSpan.parentElement) {
+            unreadCountSpan.parentElement.remove();
+            };
+            if (unReadedMessageSpan) {
+                unReadedMessageSpan.remove();
+            }
+        }, 2000);};
+
+    document.getElementById('messageInput').addEventListener('focus', updateMsgInput);
+
+    function updateMsgInput() {        
+        removeUnreadCountAfterDelay(); 
+        fetchUnreadMessages();
+    };
+
+    async function fetchUnreadMessages() {
+        // Отримуємо friendId з елемента 'toCopy'
+        var imageElement = document.getElementById('toCopy');
+        var friendId = imageElement.getAttribute('data-id');
+
+        const response = await fetch('/Chat/GetUnreadMessages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: friendId 
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`Кількість непрочитаних повідомлень: ${data.unreadCount}`);
+
+            // Оновлюємо текст в елементі span
+            document.getElementById('unreadMsg-count').textContent = data.unreadCount;
+        } else {
+            console.error('Не вдалося отримати кількість непрочитаних повідомлень');
+        }
+    }
+    function moveUserItemToTop() {
+        // Отримуємо friendId з елемента toCopy
+        var imageElement = document.getElementById('toCopy');
+        var friendId = imageElement.getAttribute('data-id');
+
+        // Знаходимо відповідний елемент з класом user-item
+        var userItem = document.getElementById('user-item-' + friendId);
+
+        if (userItem) {
+            // Отримуємо батьківський елемент
+            var parentDivA = userItem.parentNode;
+            var parentDivUser = parentDivA.parentNode;
+
+            // Переміщуємо userItem на початок батьківського DIV
+            parentDivUser.insertBefore(parentDivA, parentDivUser.firstChild);
+        } else {
+            console.error('Element not found for ID:', friendId);
+        }
+    }  
+    
+    function moveSenderItemToTop(senderId) {     
+
+        // Знаходимо відповідний елемент з класом user-item
+        var userItem = document.getElementById('user-item-' + senderId);
+
+        if (userItem) {
+            // Отримуємо батьківський елемент
+            var parentDivA = userItem.parentNode;
+            var parentDivUser = parentDivA.parentNode;
+
+            // Переміщуємо userItem на початок батьківського DIV
+            parentDivUser.insertBefore(parentDivA, parentDivUser.firstChild);
+        } else {
+            console.error('Element not found for ID:', friendId);
+        }
+    }
+
+    // МОДАЛЬНЕ ВІКНО
+    // Функція для відкриття модального вікна
+    function openModal() {
+        document.getElementById("uploadModal").style.display = "block";
+    }
+
+    // Функція для закриття модального вікна
+    function closeModal() {
+        document.getElementById("uploadModal").style.display = "none";
+        var output = document.getElementById('image-preview-modal');
+        output.src = '';
+    }   
+
+    // Функція для попереднього перегляду зображення
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('image-preview-modal');
+            output.src = reader.result;
+            output.style.display = 'block';
+            document.querySelector('.saveButton').style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    // Функція для виклику вибору файлу
+    function triggerFileInput() {
+        document.getElementById("fileInput").click();
+    }
+
+    // Закриття модального вікна при кліку поза його межами
+    function closeModalOnClickOutside(event) {
+        const modal = document.getElementById("uploadModal");
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+
+@section HeadEnd {
+    <style>
+        .main {
+            display: flex;
+            height: 85vh;
+            gap: 20px;            
+        }
+        h2 {
+            margin: 10px 0 10px 0;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 20%;
+            border-right: 1px solid white;
+            overflow-y: scroll;
+            padding: 20px 5px 20px 20px;
+            scrollbar-width: thin; /* For Firefox */
+            scrollbar-color: transparent transparent; /* For Firefox */
+            border: 1px solid white;
+            /* box-sizing: border-box; */
+            margin: 20px 10px 20px 20px;
+            border-radius: 20px;
+            box-sizing: border-box;
+        }
+
+        .users-chat {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            overflow-y: scroll;
+            scrollbar-width: thin; /* For Firefox */
+            scrollbar-color: transparent transparent; /* For Firefox */
+            box-sizing: border-box;
+        }
+
+        .user-item {
+            display: flex;
+            /* width: 90%; */
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-radius: 10px;
+            padding: 5px 10px 5px 5px;
+        }
+
+        .active-user-item {
+            background-color: darkgreen;
+        }
+        .image-friend {
+                width: 50px;
+                height: 50px;
+                border: 2px solid white;
+                background-color: lightgrey;
+                border-radius: 50%;
+                object-fit: cover;
+                display: block;
+            }
+
+        .friend-info {
+            display: flex;
+            flex-direction: column; /* Вирівнюємо ім'я та останнє повідомлення вертикально */
+            width: 70%;
+        }
+
+        .friend-name {
+            font-weight: bold; /* Товсте шрифт для імені */
+        }
+
+        .unread-count {
+            background-color: white;
+            color: black;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 0;
+            width: 10%;
+        }
+        .delete-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+            .delete-button:hover {
+                background-color: #d32f2f;
+            }
+
+            .delete-button:active {
+                transform: scale(0.95);
+            }
+
+            .delete-button:focus {
+                outline: none;
+            }
+
+        .last-message {
+            font-size: 0.85em; /* Зменшуємо розмір шрифту для останнього повідомлення */
+            color: gray; /* Змінюємо колір тексту для останнього повідомлення */
+        }        
+
+        .chat-window {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            padding: 20px;            
+            border: 1px solid white;
+            box-sizing: border-box;
+            margin: 20px 20px 20px 10px;
+            border-radius: 20px;
+        }
+
+        .friend-item {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 90%;
+            box-sizing: border-box;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            height: 80%;
+            overflow-y: scroll;
+            margin: 0px 40px 20px 40px;
+            padding: 10px;            
+            border-radius: 5px;
+            scrollbar-width: thin; /* For Firefox */
+            scrollbar-color: transparent transparent; /* For Firefox */
+            box-sizing: border-box;
+        }
+
+        .load-more-messages {
+            width: 100%;
+            display: inline-block;
+            margin-bottom: 10px;
+            color: #007bff; /* Синій колір, як посилання */
+            text-decoration: none; /* Без підкреслення */
+            text-align: center;
+        }
+
+            .load-more-messages:hover {
+                text-decoration: underline; /* Підкреслення при наведенні */
+            }
+        .unReadedMessageSpan {
+            width: 100%; /* Виправлено на width */
+            padding: 10px;
+            border-bottom: 1px solid white;
+            text-align: center; /* Виправлено на center */
+        }
+        .message {
+            display: flex;
+            gap: 10px;
+            width: 40%;     
+            border-radius: 5px;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .sender {
+            /* display: flex; */
+            align-self: flex-end;
+            justify-content: right;
+        }
+
+        .message-image {
+            width: 100%; /* Зображення не перевищує ширину контейнера */
+            height: auto; /* Пропорційне масштабування */
+            border-radius: 8px; /* Закруглені краї */
+            object-fit: cover;
+            display: block;
+        }
+
+        .receiver {
+            align-self: flex-start;
+        }
+
+        .sender-msg {
+            background-color: darkgreen;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .receiver-msg {
+            background-color: darkgrey;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-friend-chat {
+            width: 40px;
+            height: 40px;
+            border: 2px solid white;
+            background-color: lightgrey;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .username-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .message-timestamp {
+            font-size: 0.8em;
+            float: right;
+            align-self: flex-end;
+        }
+
+        .message-input {
+            margin: 10px;
+            display: flex;
+            gap: 10px;
+            /* box-sizing: border-box; */
+        }
+
+            .message-input textarea {
+                flex: 16;
+                padding: 5px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                resize: none;
+                /* box-sizing: border-box; */
+            }
+
+        .image-icon-label {
+            flex: 1;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: darkgreen;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 20px;
+        }
+
+        #sendButton {
+            flex: 3;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: darkgreen;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
+            /* box-sizing: border-box; */
+        }
+
+            #sendButton:hover {
+            background-color: #45a049;
+        }
+
+        .image-icon-label:hover {
+            background-color: #45a049;
+        }
+
+        .emoji-button {    
+            background-color: black;
+            border: none;
+            cursor: pointer;
+            font-size: 32px;
+        }
+
+            .emoji-button:hover {
+                background-color: #333333;
+            }
+
+        .emoji-picker{
+            width: 500px;
+        }
+        /* МОДАЛЬНЕ ВІКНО */
+        .modal {
+            display: none; /* Модальне вікно приховане за замовчуванням */
+            position: fixed; /* Фіксована позиція на екрані */
+            z-index: 1000; /* Вікно завжди буде зверху */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        /* Стиль для вмісту модального вікна */
+        .modal-content {
+            background-color: black;
+            margin: 10% auto;
+            padding: 20px;
+            border: 2px solid white;
+            width: 50%;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        /* Кнопка закриття модального вікна */
+        .close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+        /* Стиль для області завантаження */
+        .upload-area {
+            max-width: 100%; /* Ширина до 100% контейнера */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Іконка завантаження */
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+
+        /* Стиль для попереднього перегляду зображення */
+        #image-preview-modal {
+            max-width: 100%;
+            height: auto;
+            min-height: 200px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .uploadButton {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+            .uploadButton:hover {
+                background-color: #0056b3;
+            }
+        /*  ОПИС */
+        .caption-area {
+            margin-top: 15px;
+        }
+
+            .caption-area label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+
+            .caption-area input {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid white;
+                border-radius: 4px;
+                box-sizing: border-box;
+                border-color: whire;
+            }
+
+        .saveButton {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+            .saveButton:hover {
+                background-color: #218838;
+            }
+        /* Стилі для браузерів на основі WebKit (Chrome, Safari) */
+        /* .user-list::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .user-list::-webkit-scrollbar-track {
+            background-color: white; 
+            border-radius: 10px;
+        }
+
+        .user-list::-webkit-scrollbar-thumb {
+            background-color: black; 
+            border-radius: 10px;
+        }
+
+            .user-list::-webkit-scrollbar-thumb:hover {
+                background-color: black; 
+            }
+        
+        .user-list {
+            scrollbar-color: black white;
+            scrollbar-width: thin; 
+        } */
+    </style>
+}

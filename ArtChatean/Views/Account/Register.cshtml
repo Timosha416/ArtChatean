@@ -1,0 +1,156 @@
+﻿@using ArtChatean.Models.Forms;
+@using ArtChatean.Models;
+
+@model RegisterForm
+
+@{
+    Layout = "_AdminLayout";
+}
+@{
+    var picture = ViewBag.RandomPicture as Picture;
+}
+<div class="login-form">
+    <h1>Registration</h1>
+    <p>Please enter your details</p>
+    <form method="post" enctype="multipart/form-data" autocomplete="off" onsubmit="return validatePasswords()">
+        <div>
+            @Html.LabelFor(m => m.FullName)
+            @Html.TextBoxFor(m => m.FullName, new { @class = "form-input", placeholder = "Enter your full name", autocomplete = "off", required = "required" })
+            @Html.ValidationMessageFor(m => m.FullName)
+        </div>
+
+        <div>
+            @Html.LabelFor(m => m.Email)
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-input", placeholder = "Enter your email", type = "email", autocomplete = "off", required = "required" })
+            @Html.ValidationMessageFor(m => m.Email)
+        </div>
+
+        <div>
+            @Html.LabelFor(m => m.UserName)
+            @Html.TextBoxFor(m => m.UserName, new { @class = "form-input", placeholder = "Enter your username", autocomplete = "off", required = "required" })
+            @Html.ValidationMessageFor(m => m.UserName)
+        </div>
+
+        <div>
+            @Html.LabelFor(m => m.Password)
+            @Html.PasswordFor(m => m.Password, new { @class = "form-input", placeholder = "Enter your password", autocomplete = "off", required = "required", id = "password" })
+            @Html.ValidationMessageFor(m => m.Password)
+        </div>
+
+        <div>
+            @Html.LabelFor(m => m.ConfirmPassword)
+            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-input", placeholder = "Confirm your password", required = "required", id = "confirmPassword" })
+            @Html.ValidationMessageFor(m => m.ConfirmPassword)
+        </div>
+
+        <button type="submit" class="register-button">Register me</button>
+    </form>
+</div>
+<div class="login-image">
+    @if (picture.Image != null && picture.Image.Length > 0)
+    {
+        <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="" />
+    }
+    else
+    {
+        <img src="#" alt="Profile Image" />
+    }
+</div>
+
+<script>
+    function validatePasswords() {
+        var password = document.getElementById("password").value;
+        var confirmPassword = document.getElementById("confirmPassword").value;
+
+        if (password !== confirmPassword) {
+            alert("Passwords do not match!");
+            return false; // Запобігає відправці форми
+        }
+        return true; // Дозволяє відправку форми
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            var form = document.querySelector('form');
+            form.reset();
+        }, 1000); 
+    });
+</script>
+
+@section HeadEnd {
+    <style>
+        .login-form {
+            flex: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0 auto;
+            height: 100%;
+        }
+
+            .login-form h1 {
+                width: 70%;
+                margin: 0 0 10px;
+                font-size: 28px;
+            }
+
+            .login-form p {
+                width: 70%;
+                margin: 0 0 20px;
+            }
+
+        form {
+            width: 70%;
+        }
+
+            form label {
+                display: block;
+                margin: 10px 0 5px;
+            }
+
+            form input {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 20px;
+                border: 1px solid white;
+                border-radius: 5px;
+                box-sizing: border-box;
+            }        
+        
+        .register-button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 0 20px 0;
+            background-color: white;
+            color: black;
+            font-size: 16px;
+            box-sizing: border-box;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            border: 2px solid white;
+        }    
+            .register-button:hover {
+                background-color: black;
+                color: white;
+                border: 2px solid white;
+            }
+
+        .login-image {
+            flex: 3;
+            background: #ddd;
+            height: 90%;
+            margin-right: 40px;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
+}	

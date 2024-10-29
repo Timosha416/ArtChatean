@@ -1,0 +1,373 @@
+﻿@using ArtChatean.Models
+@model User
+@{
+    Layout = "_MainLayout";
+}
+
+
+<form>
+    <h2>Customer Info</h2>
+    <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="FullName" value="@Model.FullName" placeholder="Type your full name" class="form-control" disabled>
+    </div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="Email" value="@Model.Email" placeholder="Type your email" class="form-control" disabled>
+    </div>
+    <div class="form-group">
+        <label for="phoneNumber">Phone Number</label>
+        <input type="tel" id="phoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" placeholder="Type your phone number" class="form-control" disabled>
+    </div>
+
+    <h2>Shipping Address</h2>
+    @if (Model.Addresses != null && Model.Addresses.Any())
+    {
+        var address = Model.Addresses.First();
+        <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" name="Address.Country" value="@address.Country" placeholder="Enter your country" class="form-control" maxlength="50" required disabled>
+        </div>
+        <div class="form-group">
+            <label for="postalCode">Postal Code</label>
+            <input type="text" id="postalCode" name="Address.PostalCode" value="@address.PostalCode" placeholder="Enter your postal code" class="form-control" maxlength="10" required disabled>
+        </div>
+        <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" name="Address.City" value="@address.City" placeholder="Enter your city" class="form-control" maxlength="50" required disabled>
+        </div>
+        <div class="form-group">
+            <label for="street">Street</label>
+            <input type="text" id="street" name="Address.Street" value="@address.Street" placeholder="Enter your street" class="form-control" disabled>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" name="Address.Country" placeholder="Enter your country" class="form-control" maxlength="50">
+        </div>
+        <div class="form-group">
+            <label for="postalCode">Postal Code</label>
+            <input type="text" id="postalCode" name="Address.PostalCode" placeholder="Enter your postal code" class="form-control" maxlength="10">
+        </div>
+        <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" name="Address.City" placeholder="Enter your city" class="form-control" maxlength="50">
+        </div>
+        <div class="form-group">
+            <label for="street">Street</label>
+            <input type="text" id="street" name="Address.Street" placeholder="Enter your street" class="form-control">
+        </div>
+    }
+
+    <h2>Payment</h2>
+    @if (Model.Payments != null && Model.Payments.Any())
+    {
+        var payment = Model.Payments.First();
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" id="cardNumber" name="Payment.CardNumber" value="@payment.CardNumber" placeholder="Enter your card number" class="form-control" maxlength="19" required disabled>
+        </div>
+        <div class="form-group">
+            <label for="cardHolderName">Card Holder Name</label>
+            <input type="text" id="cardHolderName" name="Payment.CardHolderName" value="@payment.CardHolderName" placeholder="Enter the card holder's name" class="form-control" maxlength="50" required disabled>
+        </div>
+        <div class="form-group">
+            <label for="expiryDate">Expiry Date</label>
+            <input type="text" id="expiryDate" name="Payment.ExpiryDate" value="@payment.ExpiryDate.ToString("MM/yyyy")" placeholder="MM/YYYY" class="form-control" maxlength="7" required disabled>
+        </div>
+        <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input type="text" id="cvv" name="Payment.CVV" value="@payment.CVV" placeholder="Enter your CVV" class="form-control" maxlength="3" required disabled>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" id="cardNumber" name="Payment.CardNumber" placeholder="Card Number" class="form-control" maxlength="19">
+        </div>
+        <div class="form-group">
+            <label for="expiryDate">Expiry Date</label>
+            <input type="text" id="expiryDate" name="Payment.ExpiryDate" placeholder="MM/YYYY" class="form-control" maxlength="7">
+        </div>
+        <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input type="text" id="cvv" name="Payment.CVV" placeholder="Enter your CVV" class="form-control" maxlength="3">
+        </div>
+    }
+
+    <div class="checkbox">
+        <input type="checkbox" id="subscribe" name="Subscribe">
+        <label for="subscribe">
+            I would like to receive news and information on upcoming events organized
+            by the Name of Gallery
+        </label>
+    </div>
+</form>
+
+<div class="order">
+    <h2>Your Purchase</h2>
+
+    @if (Model?.Orders != null && Model.Orders.Any())
+    {
+        var incompleteOrder = Model.Orders.FirstOrDefault(order => !order.IsCompleted);
+
+        if (incompleteOrder != null)
+        {
+            @foreach (var pictureOrder in incompleteOrder.PictureOrders)
+            {
+                var picture = pictureOrder.Picture;
+                <div class="purchase-item" data-receiver-id="@picture.UserId" data-picture-title="@picture.Title">
+                    <div class="image">
+                        <a href="@Url.Action("Picture", "Shop", new { id = picture.Id })" class="username-link">
+                            @if (picture.Image != null && picture.Image.Length > 0)
+                            {
+                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Title" />
+                            }
+                            else
+                            {
+                                <img src="#" alt="Profile Image" />
+                            }
+                        </a>
+                    </div>
+                    <div class="info">
+                        <div>
+                            <a href="@Url.Action("Picture", "Shop", new { id = picture.Id })" class="username-link">@picture.Title</a>
+                            </div>
+                        <div>@incompleteOrder.Number</div>
+                        <div>Author: 
+                            <a href="@Url.Action("FriendProfile", "Main", new { id = picture.User.Id })" class="username-link">@picture.User.FullName</a>
+                            </div>
+                    </div>
+                    <div class="price">@picture.Price$</div>
+                </div>
+            }
+
+            <div class="totals">
+                <div>
+                    <div>Subtotal</div>
+                    <div>@incompleteOrder.PictureOrders.Sum(po => po.Picture.Price)$</div>
+                </div>
+                <div>
+                    <div>Shipping</div>
+                    <div>10$</div>
+                </div>
+                <div>
+                    <div><strong>Total</strong></div>
+                    <div><strong>@(incompleteOrder.PictureOrders.Sum(po => po.Picture.Price) + 10)$</strong></div>
+                </div>
+            </div>
+            @Html.Raw(ViewBag.FormCode)
+            <button type="button" data-id="@incompleteOrder.Id" data-order-number="@incompleteOrder.Number" data-sender-id="@incompleteOrder.CustomerId" class="btn" onclick="validateAndPay(this)">Validate and Pay</button>
+        }
+        else
+        {
+            <div>No active orders found.</div>
+        }
+    }
+    else
+    {
+        <div>No orders found.</div>
+    }
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#cardNumber').mask('0000-0000-0000-0000');
+    });
+    $(document).ready(function () {
+        $('#expiryDate').mask('00/0000');
+    });    
+
+    function validateAndPay(element) {
+        var orderId = element.getAttribute('data-id');
+        var senderId = element.getAttribute('data-sender-id');
+        var orderNumder = element.getAttribute('data-order-number');
+        
+        fetch('/Order/CompleteOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: orderId
+        })
+       
+            .then(response => {                
+                if (response.ok) {
+                    var purchaseItems = document.querySelectorAll('.purchase-item');
+                    purchaseItems.forEach(item => {
+                        var receiverId = item.getAttribute('data-receiver-id');
+                        var pictureTitle = item.getAttribute('data-picture-title');
+                        var message = `Hello! I buy your picture ${pictureTitle}. Order № ${orderNumder}. You can view it in your Sold Pictures.`;
+
+                        // Відправляємо повідомлення кожному автору картини
+                        connection.invoke("SendPrivateMessage", senderId, receiverId, message)
+                            .catch(function (err) {
+                                console.error('Failed to send message to', receiverId, ':', err.toString());
+                            });                        
+                    });     
+                    document.querySelector('input[type="image"][name="btn_text"]').click();
+                }
+                else if (response.status === 409) {
+                    alert("Some pictures were already sold.");
+                }
+                else {
+                    alert("Failed to complete the order.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred.");
+            });
+    }
+</script>
+@section HeadEnd {
+    <style>
+
+        .main {
+            display: flex;
+            flex-direction: row;
+        }
+        /* ФОРМА ДЛЯ ВІДОБРАЖЕННЯ ІНФОРМАЦІЇ */
+        form {
+            flex: 2;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+        }
+
+            form[action="https://www.liqpay.ua/api/3/checkout"] {
+                display: none;
+            }
+
+        h2 {
+            margin-bottom: 10px;
+            font-size: 24px;
+            border-bottom: 1px solid white;
+            padding-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            padding: 10px 0px 10px 10px;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 0px 10px 10px;            
+            border-radius: 5px;
+            background-color: white;
+            color: black;
+        }
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox input {
+            flex: 1;
+                width: 15px;
+                height: 15px;
+        }
+
+        .checkbox label {
+                flex: 9;
+                font-size: 12px;
+            }
+
+        /* ЗАМОВЛЕННЯ */
+        .order {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 3;
+            margin: 20px;
+        }
+
+        .purchase-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .image {
+            flex: 1;
+        }
+
+            .image img {
+                width: 100px;
+                height: auto;
+                border-radius: 5px;
+            }
+
+        .username-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .username-link:hover {
+                text-decoration: underline; /* Підкреслення при наведенні */
+            }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            flex: 4;
+            align-items: left;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .price {
+            font-weight: bold;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }        
+
+        /* СУМА */
+        .totals {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid white;
+            padding-top: 10px;
+            border-bottom: 1px solid white;
+            padding-bottom: 10px;
+        }
+
+            .totals div {
+                display: flex;
+                justify-content: space-between;
+            }
+
+        .btn {
+            display: block;
+            width: 30%;
+            padding: 15px;
+            background-color: white;
+            color: black;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+            .btn:hover {
+                background-color: green;
+            }
+    </style>
+}

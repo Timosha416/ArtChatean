@@ -1,0 +1,117 @@
+﻿@model ArtChatean.Models.User
+
+
+@if (Model?.Orders != null && Model.Orders.Any())
+{
+    var completedOrders = Model.Orders.Where(order => order.IsCompleted).ToList();
+
+    if (completedOrders.Any())
+    {
+        @foreach (var order in completedOrders.AsEnumerable().Reverse())
+        {
+            <div class="order-full">
+                <div class="order-header">
+                    <div class="order-number">Order №@order.Number</div>
+                    <div class="order-status">
+                        <span>Completed</span>
+                        <span>@order.OrderDate.ToString("MMMM, yyyy")</span>
+                        <span>@((DateTime.Now - order.OrderDate).Days) days ago</span>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="completed">Ordered<br>@order.OrderDate.ToString("dd/MM/yy")<br>@order.OrderDate.ToString("HH:mm")</div>
+                    <div>Shipped<br>@order.OrderDate.AddDays(2).ToString("dd/MM/yy")</div>
+                    <div>Estimated delivery<br>@order.OrderDate.AddDays(10).ToString("dd/MM/yy")</div>
+                </div>
+                <div class="order-details">
+                    <h3>Order details</h3>
+                    @if (order.PictureOrders != null && order.PictureOrders.Any())
+                    {
+                        @foreach (var pictureOrder in order.PictureOrders)
+                        {
+                            var picture = pictureOrder.Picture;
+                            <div class="order-item">
+                                <a href="@Url.Action("Picture", "Shop", new { id = picture.Id })" class="username-link">
+                                    @if (picture.Image != null && picture.Image.Length > 0)
+                                    {
+                                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Title" />
+                                    }
+                                    else
+                                    {
+                                        <img src="#" alt="Profile Image" />
+                                    }
+                                </a>
+                                <div class="order-item-info">
+                                    <div class="order-item-title">
+                                        <a href="@Url.Action("Picture", "Shop", new { id = picture.Id })" class="username-link">@picture.Title</a>
+                                    </div>
+                                    <div class="order-item-author">
+                                        Author:
+                                        <a href="@Url.Action("FriendProfile", "Main", new { id = picture.User.Id })" class="username-link">
+                                            @picture.User.FullName
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="order-item-status status-@order.Id" id="status-@order.Id"></div>
+                                <div class="order-item-price" id="order-item-price">$@picture.Price?.ToString("0.00")</div>
+                            </div>
+                        }
+                        <div class="order-summary">
+                            <div class="order-total">Total:</div>
+                            <div class="order-total">$@order.PictureOrders.Sum(po => po.Picture.Price)?.ToString("0.00") </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>No pictures found for this order.</div>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div>No completed orders found.</div>
+    }
+}
+else
+{
+    <div>No orders found.</div>
+}
+
+<script>
+    // Функція для перевірки статусу платежу
+    function checkPaymentStatus(orderId, statusElement) {
+        fetch('/Payment/CheckPayment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: orderId
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    statusElement.textContent = "Status: " + data.status; // Оновлюємо текст статусу
+                } else {
+                    statusElement.textContent = "Unknown status"; // Якщо статус не визначений
+                }
+            })
+            .catch(error => {
+                console.error('Помилка:', error);
+                document.getElementById('status-' + orderId).innerText = "Error fetching status";
+            });
+    }
+
+    // Дочекаємося завантаження документа
+    window.addEventListener('DOMContentLoaded', (event) => {
+        // Отримуємо всі елементи статусу
+        var statusElements = document.querySelectorAll('.order-item-status');
+
+        // Викликаємо функцію для кожного orderId
+        statusElements.forEach(function (statusElement) {
+            var orderId = statusElement.className.split(' ').find(c => c.startsWith('status-')).split('-')[1]; // Отримуємо OrderId з класу
+            checkPaymentStatus(orderId, statusElement); // Викликаємо функцію для перевірки статусу
+        });
+    });
+</script>

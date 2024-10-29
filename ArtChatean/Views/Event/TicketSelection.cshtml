@@ -1,0 +1,386 @@
+﻿@using ArtChatean.Models
+@using System.Globalization
+@model List<TicketTariff>
+
+@{
+    Layout = "_MainLayout";
+    var timeSlot = ViewBag.TimeSlot as EventTimeSlot;
+    var eventDetails = ViewBag.EventDetails as Event;
+    int artistId = eventDetails.ArtistId;
+}
+
+<div class="title-block">
+    <h1 class="page-title">Tickets</h1>
+</div>
+
+<div class="ticket-selection-wrapper">
+    <!-- Ліва частина сторінки (Вибір квитків) -->
+    <div class="ticket-selection">
+        <nav class="breadcrumb">
+            <a href="@Url.Action("Events", "Event", new { artistId = artistId })" class="date-time">Date and time</a>
+            <span class="your-ticket">› Your ticket ›</span>
+            <span class="payment">Payment</span>
+        </nav>
+
+        <h1 class="top-ticket">Tickets</h1>
+        <div class="vector"></div>
+        <p class="top-text">Please indicate the number of tickets you want at each tariff. The number of selected tickets must be at most 6 per customer.</p>
+
+        <form id="ticket-form" method="post" action="@Url.Action("Payment", "Event", new { timeSlotId = timeSlot.Id })">
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th>Tariff</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Sub-total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tariff in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="tariff-name">@tariff.Name</span>
+                                @if (tariff.Id == 3 || tariff.Id == 4 || tariff.Id == 5)
+                                {
+                                    <span class="info-icon" title="We kindly ask that you provide justification at the entrance.">i</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="quantity-selector">
+                                    <select name="ticketQuantities[@tariff.Id]" class="ticket-quantity">
+                                        @for (var i = 0; i <= 6; i++)
+                                        {
+                                            <option value="@i">@i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </td>
+                            <td>@tariff.Price.ToString("0.00 EUR")</td>
+                            <td class="sub-total">0.00 EUR</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <button type="submit" id="payment-btn" class="payment-btn">Go to payment</button>
+        </form>
+    </div>
+
+    <!-- Права частина сторінки (Інформація про подію) -->
+    <div class="event-info">
+        <h2>@eventDetails.Artist.FullName</h2>
+        <div class="vector2"></div>
+        <p>@eventDetails.EventDate.ToString("dd MMMM, yyyy", CultureInfo.GetCultureInfo("en-US"))</p>
+        <p>@timeSlot.Time.ToString("HH:mm")</p>
+
+        <div class="event-description">
+            <p>
+                Our museum welcomes and presents "@eventDetails.Description". The ticket gives access to both exhibitions and the whole building.
+                <br><br>
+                Tickets are neither exchangeable nor refundable in accordance with our general conditions of sale.
+                <br><br>
+                Visitors are invited to leave the galleries 15 minutes before the effective closing time of the Fondation.
+                <br><br>
+                If you have any questions, you can contact us by calling +33 1 40 69 96 00 from 10 a.m. to 6 p.m., from Monday to Friday.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Запобігання відправці форми, якщо не вибрано квитків
+    document.getElementById('ticket-form').addEventListener('submit', function (event) {
+        const quantities = document.querySelectorAll('.ticket-quantity');
+        let totalSelected = 0;
+
+        // Підрахунок загальної кількості вибраних квитків
+        quantities.forEach(select => {
+            totalSelected += parseInt(select.value) || 0; // Використовуємо || 0 для обробки NaN
+        });
+
+        if (totalSelected === 0) {
+            // Показати повідомлення та залишити користувача на сторінці
+            event.preventDefault();
+            alert("Please select at least one ticket before proceeding to payment.");
+        }
+    });
+
+    // Оновлення субтоталу при зміні кількості
+    document.querySelectorAll('.ticket-quantity').forEach(select => {
+        select.addEventListener('change', function () {
+            const price = parseFloat(this.closest('tr').querySelector('td:nth-child(3)').textContent);
+            const quantity = parseInt(this.value);
+            const subTotal = (price * quantity).toFixed(2) + ' EUR';
+            this.closest('tr').querySelector('.sub-total').textContent = subTotal;
+        });
+    });
+</script>
+
+@section HeadEnd {
+<style>
+    /* body {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+    } */
+    .main {
+        width: 100%;
+        /* background: white; */
+    }
+    .date-time {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        color: grey;
+        cursor: pointer;
+        text-decoration: none; /* Прибирає підкреслення */
+    }
+
+    .your-ticket {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        color: white;
+    }
+
+    .payment {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        color: grey;
+    }
+
+
+    .page-title {
+        text-align: center;
+        margin: 20px 0;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 46px;
+        color: #000000;
+        transition: transform 0.5s ease, font-size 0.5s ease;
+    }
+            .page-title:hover {
+                transform: scale(1.1);
+                font-size: 52px; /* Збільшення шрифту при наведенні */
+            }
+
+    .top-ticket {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 25px;
+        line-height: 30px;
+        /* color: #000000; */
+    }
+
+    .top-text {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 20px;
+        line-height: 24px;
+        /* color: #000000; */
+        margin-top: 10px;
+    }
+
+    .vector {
+        text-align: center;
+        border: 1px solid #D9D9D9;
+        width: 70%;
+        height: 0px;
+    }
+
+    .vector2 {
+        text-align: center;
+        border: 1px solid #D9D9D9;
+        width: 85%;
+        height: 0px;
+    }
+
+    .title-block {
+        background-image: url('/images/Beutiful picture.jpg');
+        padding: 25px;
+        height: 300px;
+        text-transform: uppercase;
+        margin: 0px -10px 20px -10px;
+        display: flex;
+        justify-content: center; /* горизонтальне центрування */
+        align-items: center; /* вертикальне центрування */
+    }
+
+    .ticket-selection-wrapper {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px auto;
+        max-width: 1800px;
+    }
+
+    .event-info {
+        width: 45%;
+        background-color: transparent;
+        padding: 20px;
+    }
+
+        .event-info h2 {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-size: 25px;
+            line-height: 30px;
+            /* color: #000000; */
+            text-transform: uppercase;
+        }
+
+        .event-info p {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-size: 14px;
+            line-height: 17px;
+           /*  color: #000000; */
+            margin-bottom: 10px;
+        }
+
+    .event-description p {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        font-size: 16px;
+        line-height: 19px;
+        /* color: #000000; */
+    }
+
+    .ticket-selection {
+        width: 80%;
+        background-color: transparent;
+        padding: 22px;
+    }
+
+    .breadcrumb {
+        /* color: #aaa; */
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        /* color: #333; */
+    }
+
+    p {
+        font-size: 16px;
+        margin-bottom: 20px;
+        /* color: #555; */
+    }
+
+    .ticket-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .ticket-table th,
+        .ticket-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid white;
+        }
+
+        .ticket-table th {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 17px;
+            /* color: #D9D9D9; */
+        }
+
+        .ticket-table td {
+            font-size: 16px;
+            /* color: #333; */
+        }
+
+            .ticket-table td .tariff-name {
+                font-family: 'Inter', sans-serif; /* Додайте sans-serif на випадок, якщо шрифт не завантажується */
+                font-style: normal;
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 17px;
+                /* color: #000000; */
+            }
+
+
+    .quantity-selector select {
+        padding: 6px 12px;
+        font-size: 14px;
+        border: 1px solid white;
+        background-color: white;
+        color: #000000;
+        border-radius: 40px;
+    }
+
+    .sub-total {
+        /* color: #555; */
+    }
+
+    .payment-btn {
+        margin-top: 10px;
+        padding: 10px 40px;
+        border: 1px solid white;
+        background-color: transparent;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 17px;
+        color: white;
+        cursor: pointer;
+        border-radius: 40px;
+        text-decoration: none;
+        outline: none;
+        float: right; /* Вирівнює кнопку вправо */
+        width: fit-content; /* Ширина за розміром контенту */
+        transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+    }
+
+
+        .payment-btn:hover {
+            background-color: white;
+            color: #000000;
+        }
+
+    .info-icon {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 1px solid white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 20px;
+        font-size: 14px;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+        position: relative; /* Для позиціонування плашки */
+    }
+
+        .info-icon:hover {
+                background-color: white;
+                color: #000000;
+        }
+</style>
+}

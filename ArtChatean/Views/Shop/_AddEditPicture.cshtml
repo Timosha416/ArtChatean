@@ -1,0 +1,347 @@
+﻿@using ArtChatean.Models;
+
+@model List<Picture>
+
+<div class="button-shop">
+    <a href="@Url.Action("Main", new { section = "PictureGallery" })" class="add-product-btn">Go to shop</a>
+    <a href="@Url.Action("Main", new { section = "SoldPictures" })" class="add-product-btn">Sold pictures</a>
+</div>
+
+<h2>Add new picture</h2>
+<form method="post" enctype="multipart/form-data" action="/Shop/AddPicture">
+    <input type="hidden" name="UserId" value="@ViewBag.currentUserId" />
+    <div class="form-header">
+        <div class="inside">
+            <label for="size">Size</label>
+            <select name="size" id="size" class="shop-select" required>
+                <option value="">Select Size</option>
+                <option value="8x10 inches">8x10 inches</option>
+                <option value="9x12 inches">9x12 inches</option>
+                <option value="11x14 inches">11x14 inches</option>
+                <option value="12x16 inches">12x16 inches</option>
+                <option value="16x20 inches">16x20 inches</option>
+                <option value="18x24 inches">18x24 inches</option>
+                <option value="20x30 inches">20x30 inches</option>
+                <option value="24x24 inches">24x24 inches</option>
+                <option value="24x36 inches">24x36 inches</option>
+                <option value="30x40 inches">30x40 inches</option>
+                <option value="36x48 inches">36x48 inches</option>
+                <option value="40x60 inches">40x60 inches</option>
+                <option value="48x72 inches">48x72 inches</option>
+                <option value="48x72 inches">100x100 inches</option>
+            </select>
+        </div>
+        <div class="inside">
+            <label for="price">Price</label>
+            <input type="text" name="price" id="price" placeholder="Enter price" required />
+        </div>
+        <button type="submit" class="save-btn">Save</button>
+    </div>
+
+    <div class="form-body">
+        <div class="text-info">            
+            <div class="title">
+                <input type="text" id="title" name="Title" placeholder="Enter the title of the picture" required />
+            </div>
+            <div class="caption">
+                <input type="text" id="caption" name="Caption" placeholder="Enter a caption for the picture" required />
+            </div>
+            <div class="description">
+                <textarea id="description" name="description" rows="4" placeholder="Enter a description for the picture"></textarea>
+            </div>
+        </div>
+        <div class="form-image" onclick="triggerNewFileUpload()">
+            <img id="image-preview" class="image-placeholder" src="" alt="Image Preview" />
+            <input type="file" id="image-upload" name="Image" accept="image/*" style="display: none;" onchange="previewNewImage(event)" required />
+        </div>
+    </div>
+
+    <div class="form-footer">
+        <select name="style" class="shop-select" required>
+            <option value="">Style</option>
+            <option value="Abstract">Abstract</option>
+            <option value="Fine-art">Fine Art</option>
+            <option value="Modern">Modern</option>
+            <option value="Abstract Expressionism">Abstract Expressionism</option>
+            <option value="Expressionism">Expressionism</option>
+            <option value="Figurative">Figurative</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <select name="subject" class="shop-select" required>
+            <option value="">Subject</option>
+            <option value="Abstract">Abstract</option>
+            <option value="Landscape">Landscape</option>
+            <option value="People">People</option>
+            <option value="Portrait">Portrait</option>
+            <option value="Animal">Animal</option>
+            <option value="Floral">Floral</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <select name="medium" class="shop-select" required>
+            <option value="">Medium</option>
+            <option value="Acrylic">Acrylic</option>
+            <option value="Oil">Oil</option>
+            <option value="Watercolor">Watercolor</option>
+            <option value="Ink">Ink</option>
+            <option value="Gesso">Gesso</option>
+            <option value="Spray paint">Spray paint</option>
+            <option value="Pastel">Pastel</option>
+            <option value="Paper">Paper</option>
+            <option value="Gouache">Gouache</option>
+            <option value="Paint">Paint</option>
+            <option value="Pencil">Pencil</option>
+            <option value="Fabric">Fabric</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <select name="material" class="shop-select" required>
+            <option value="">Material</option>
+            <option value="Canvas">Canvas</option>
+            <option value="Paper">Paper</option>
+            <option value="Wood">Wood</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <select name="orientation" class="shop-select" required>
+            <option value="">Orientation</option>
+            <option value="Portrait">Portrait</option>
+            <option value="Landscape">Landscape</option>
+            <option value="Square">Square</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <select name="color" class="shop-select" required>
+            <option value="">Color</option>
+            <option value="Red">Red</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+            <option value="Yellow">Yellow</option>
+            <option value="Orange">Orange</option>
+            <option value="Purple">Purple</option>
+            <option value="Pink">Pink</option>
+            <option value="Brown">Brown</option>
+            <option value="Black">Black</option>
+            <option value="White">White</option>
+            <option value="Gray">Gray</option>
+            <option value="Other">Other</option>
+        </select>
+
+    </div>
+    <div class="checkbox-gallery">        
+        <input type="checkbox" id="isForGallery" name="IsForGallery" value="true" checked />
+        <label for="isForGallery">Add to Gallery</label>
+    </div>
+</form>
+<h2>Added to shop</h2>
+@foreach (var picture in Model.Where(p => p.IsSold != true))
+{
+    <form method="post" enctype="multipart/form-data" action="/Shop/EditPicture" id="picture-@picture.Id" class="@(picture.IsSold ? "disabled-form" : "")">
+        <input type="hidden" name="Id" value="@picture.Id" />
+
+        <div class="form-header">
+            <div class="inside">
+                <label for="size-@picture.Id">Size</label>
+                <select name="size" id="size-@picture.Id" class="shop-select">
+                    <option value="">Select Size</option>
+                    <option value="8x10 inches" @(picture.Size == "8x10 inches" ? "selected" : "")>8x10 inches</option>
+                    <option value="9x12 inches" @(picture.Size == "9x12 inches" ? "selected" : "")>9x12 inches</option>
+                    <option value="11x14 inches" @(picture.Size == "11x14 inches" ? "selected" : "")>11x14 inches</option>
+                    <option value="12x16 inches" @(picture.Size == "12x16 inches" ? "selected" : "")>12x16 inches</option>
+                    <option value="16x20 inches" @(picture.Size == "16x20 inches" ? "selected" : "")>16x20 inches</option>
+                    <option value="18x24 inches" @(picture.Size == "18x24 inches" ? "selected" : "")>18x24 inches</option>
+                    <option value="20x30 inches" @(picture.Size == "20x30 inches" ? "selected" : "")>20x30 inches</option>
+                    <option value="24x24 inches" @(picture.Size == "24x24 inches" ? "selected" : "")>24x24 inches</option>
+                    <option value="24x36 inches" @(picture.Size == "24x36 inches" ? "selected" : "")>24x36 inches</option>
+                    <option value="30x40 inches" @(picture.Size == "30x40 inches" ? "selected" : "")>30x40 inches</option>
+                    <option value="36x48 inches" @(picture.Size == "36x48 inches" ? "selected" : "")>36x48 inches</option>
+                    <option value="40x60 inches" @(picture.Size == "40x60 inches" ? "selected" : "")>40x60 inches</option>
+                    <option value="48x72 inches" @(picture.Size == "48x72 inches" ? "selected" : "")>48x72 inches</option>
+                    <option value="100x100 inches" @(picture.Size == "100x100 inches" ? "selected" : "")>100x100 inches</option>
+                </select>
+            </div>
+            <div class="inside">
+                <label for="price-@picture.Id">Price</label>
+                <input type="text" name="price" id="price-@picture.Id" placeholder="Enter price" value="@picture.Price?.ToString("0.00")" />
+            </div>
+            <button type="submit" class="save-btn">Save</button>
+            <button type="button" class="delete-btn" data-id="@picture.Id" onclick="deletePicture(this)">Delete</button>
+        </div>
+
+        <div class="form-body">
+            <div class="text-info">
+                <div class="title">
+                    <input type="text" id="title-@picture.Id" name="Title" placeholder="Enter the title of the picture" value="@picture.Title" required />
+                </div>
+                <div class="caption">
+                    <input type="text" id="caption-@picture.Id" name="Caption" placeholder="Enter a caption for the picture" value="@picture.Caption" required />
+                </div>
+                <div class="description">
+                    <textarea id="description-@picture.Id" name="description" rows="4" placeholder="Enter a description for the picture">@picture.Description</textarea>
+                </div>
+            </div>
+            <div class="form-image" onclick="triggerFileUpload(@picture.Id)">
+                @if (picture.Image != null && picture.Image.Length > 0)
+                {
+                    <img id="image-preview-@picture.Id" class="image-placeholder" src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="Image Preview" />
+                    <input type="file" id="image-upload-@picture.Id" name="Image" accept="image/*" style="display: none;" onchange="previewImage(event, @picture.Id)" />
+                }
+                else
+                {
+                    <img id="image-preview-@picture.Id" class="image-placeholder" src="#" alt="" />
+                    <input type="file" id="image-upload-@picture.Id" name="Image" accept="image/*" style="display: none;" onchange="previewImage(event, @picture.Id)" />
+                }
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <select name="style" class="shop-select">
+                <option value="">Style</option>
+                <option value="Abstract" @(picture.Style == "Abstract" ? "selected" : "")>Abstract</option>
+                <option value="Fine-art" @(picture.Style == "Fine-art" ? "selected" : "")>Fine Art</option>
+                <option value="Modern" @(picture.Style == "Modern" ? "selected" : "")>Modern</option>
+                <option value="Abstract-expressionism" @(picture.Style == "Abstract-expressionism" ? "selected" : "")>Abstract Expressionism</option>
+                <option value="Expressionism" @(picture.Style == "Expressionism" ? "selected" : "")>Expressionism</option>
+                <option value="Figurative" @(picture.Style == "Figurative" ? "selected" : "")>Figurative</option>
+                <option value="Other" @(picture.Style == "Other" ? "selected" : "")>Other</option>
+            </select>
+
+            <select name="subject" class="shop-select">
+                <option value="">Subject</option>
+                <option value="Abstract" @(picture.Subject == "Abstract" ? "selected" : "")>Abstract</option>
+                <option value="Landscape" @(picture.Subject == "Landscape" ? "selected" : "")>Landscape</option>
+                <option value="People" @(picture.Subject == "People" ? "selected" : "")>People</option>
+                <option value="Portrait" @(picture.Subject == "Portrait" ? "selected" : "")>Portrait</option>
+                <option value="Animal" @(picture.Subject == "Animal" ? "selected" : "")>Animal</option>
+                <option value="Floral" @(picture.Subject == "Floral" ? "selected" : "")>Floral</option>
+                <option value="Other" @(picture.Subject == "Other" ? "selected" : "")>Other</option>
+            </select>
+
+            <select name="medium" class="shop-select">
+                <option value="">Medium</option>
+                <option value="Acrylic" @(picture.Medium == "Acrylic" ? "selected" : "")>Acrylic</option>
+                <option value="Oil" @(picture.Medium == "Oil" ? "selected" : "")>Oil</option>
+                <option value="Watercolor" @(picture.Medium == "Watercolor" ? "selected" : "")>Watercolor</option>
+                <option value="Ink" @(picture.Medium == "Ink" ? "selected" : "")>Ink</option>
+                <option value="Gesso" @(picture.Medium == "Gesso" ? "selected" : "")>Gesso</option>
+                <option value="Spray paint" @(picture.Medium == "Spray paint" ? "selected" : "")>Spray paint</option>
+                <option value="Pastel" @(picture.Medium == "Pastel" ? "selected" : "")>Pastel</option>
+                <option value="Paper" @(picture.Medium == "Paper" ? "selected" : "")>Paper</option>
+                <option value="Gouache" @(picture.Medium == "Gouache" ? "selected" : "")>Gouache</option>
+                <option value="Paint" @(picture.Medium == "Paint" ? "selected" : "")>Paint</option>
+                <option value="Pencil" @(picture.Medium == "Pencil" ? "selected" : "")>Pencil</option>
+                <option value="Fabric" @(picture.Medium == "Fabric" ? "selected" : "")>Fabric</option>
+                <option value="Other" @(picture.Medium == "Other" ? "selected" : "")>Other</option>
+            </select>
+
+            <select name="material" class="shop-select">
+                <option value="">Material</option>
+                <option value="Canvas" @(picture.Material == "Canvas" ? "selected" : "")>Canvas</option>
+                <option value="Paper" @(picture.Material == "Paper" ? "selected" : "")>Paper</option>
+                <option value="Wood" @(picture.Material == "Wood" ? "selected" : "")>Wood</option>
+                <option value="Other" @(picture.Material == "Other" ? "selected" : "")>Other</option>
+            </select>
+
+            <select name="orientation" class="shop-select">
+                <option value="">Orientation</option>
+                <option value="Portrait" @(picture.Orientation == "Portrait" ? "selected" : "")>Portrait</option>
+                <option value="Landscape" @(picture.Orientation == "Landscape" ? "selected" : "")>Landscape</option>
+                <option value="Square" @(picture.Orientation == "Square" ? "selected" : "")>Square</option>
+                <option value="Other" @(picture.Orientation == "Other" ? "selected" : "")>Other</option>
+            </select>
+
+            <select name="color" class="shop-select">
+                <option value="">Color</option>
+                <option value="Red" @(picture.Color == "Red" ? "selected" : "")>Red</option>
+                <option value="Blue" @(picture.Color == "Blue" ? "selected" : "")>Blue</option>
+                <option value="Green" @(picture.Color == "Green" ? "selected" : "")>Green</option>
+                <option value="Yellow" @(picture.Color == "Yellow" ? "selected" : "")>Yellow</option>
+                <option value="Orange" @(picture.Color == "Orange" ? "selected" : "")>Orange</option>
+                <option value="Purple" @(picture.Color == "Purple" ? "selected" : "")>Purple</option>
+                <option value="Pink" @(picture.Color == "Pink" ? "selected" : "")>Pink</option>
+                <option value="Brown" @(picture.Color == "Brown" ? "selected" : "")>Brown</option>
+                <option value="Black" @(picture.Color == "Black" ? "selected" : "")>Black</option>
+                <option value="White" @(picture.Color == "White" ? "selected" : "")>White</option>
+                <option value="Gray" @(picture.Color == "Gray" ? "selected" : "")>Gray</option>
+                <option value="Other" @(picture.Color == "Other" ? "selected" : "")>Other</option>
+            </select>
+        </div>
+        <div class="checkbox-gallery">
+            <input type="checkbox" id="isForGallery-@picture.Id" name="IsForGallery" value="true" @(picture.IsForGallery ? "checked" : "") />
+            <label for="isForGallery-@picture.Id">Add to Gallery</label>
+            <input type="checkbox" class="disabled-checkbox" id="isSold-@picture.Id" name="IsSold" value="true" @(picture.IsSold ? "checked" : "") />
+            <label for="isSold-@picture.Id" class="disabled-checkbox">Will be marked automatically if the painting is sold</label>
+        </div>
+    </form>
+}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Обробляємо всі select елементи при завантаженні сторінки
+        document.querySelectorAll('.shop-select').forEach(select => {
+            // Функція для оновлення фону
+            const updateBackgroundColor = () => {
+                if (select.value) {
+                    select.style.backgroundColor = '#d0f0c0';
+                } else {
+                    select.style.backgroundColor = '';
+                }
+            };
+            // Оновлюємо фон при завантаженні сторінки
+            updateBackgroundColor();
+            // Додаємо обробник зміни значення
+            select.addEventListener('change', updateBackgroundColor);
+        });
+    });
+    function triggerNewFileUpload() {
+        document.getElementById('image-upload').click();
+    }
+
+    function previewNewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('image-preview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+    function triggerFileUpload(pictureId) {
+        document.getElementById('image-upload-' + pictureId).click();
+    }
+
+    function previewImage(event, pictureId) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('image-preview-' + pictureId);
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+    function deletePicture(element) {
+        var pictureId = element.getAttribute('data-id');
+        var confirmed = confirm("Are you sure you want to delete this picture?");
+        if (confirmed) {
+            fetch('/Shop/DeletePicture', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: pictureId
+            })
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('picture-' + pictureId).remove();
+                    } else {
+                        alert("Failed to delete picture.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("An error occurred.");
+                });
+        }
+    }
+</script>

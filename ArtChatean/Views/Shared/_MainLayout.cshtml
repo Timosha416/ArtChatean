@@ -1,0 +1,960 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Island+Moments&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
+    <script src="~/js/emoji-button.min.js"></script>
+    <title>ArtChâteau</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 10px;
+            display: flex;            
+            align-items: center;
+            flex-direction: column;
+            min-height: 90vh;
+            background-color: black;
+            color: white;
+        }
+
+        /* КОНТЕЙНЕР МЕНЮ */
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            background-color: black;
+            padding: 20px 0 20px 0;
+        }
+
+        .logo-ref {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .logo {
+            font-size: 60px;
+            font-family: 'Island Moments', cursive;
+            position: absolute;
+            left: 50%; 
+            transform: translateX(-50%); /* Щоб центрувати за серединою */
+        }
+
+        /* ФУНКЦІОНАЛЬНІ ІКОНКИ (СПРАВА) */
+        .header-icons {
+            display: flex;
+            gap: 20px;
+            margin-right: 80px;
+            align-items: center;            
+        }
+
+            .header-icons i {
+                font-size: 24px;
+                cursor: pointer;
+                color: white;
+            }       
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-container i{
+                cursor:auto;
+        }
+
+        .notification-icon {
+            position: relative;
+        }
+
+        .unreadMsg-count {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 3px 6px;
+            font-size: 12px;
+        }
+
+        .userSearch {
+            width: 75%; 
+            padding: 5px;
+            border: 1px solid white; 
+            border-radius: 5px;
+            font-size: 16px; 
+            transition: border-color 0.3s; /* Плавний перехід для кольору кордону */
+        }
+
+            .userSearch:focus {
+                border-color: #007BFF; 
+                outline: none; 
+            }
+
+        .searchResults {
+            position: absolute;
+            top: 100%; 
+            left: 0;
+            right: 0;
+            border: 1px solid white; 
+            z-index: 1000;
+            background-color: black;
+        }
+
+            .searchResults a:hover {
+                text-decoration: underline; 
+            }
+
+            .searchResults a {
+                text-decoration: none; 
+                color: inherit;
+                font-size: 16px; 
+            }               
+                
+            .searchResults div {
+                padding: 8px; 
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+            }
+
+                .searchResults div:hover {
+                    padding: 8px; 
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    background-color: #2b2b2b;
+                }
+
+        .user-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%; 
+            margin-right: 10px;
+            border: 2px solid white;
+        }
+
+        .user-link {
+            display: flex;
+            align-items: center;
+        }
+
+        /* МЕНЮ (ЗЛІВА) */
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 20px;
+        }
+
+        #menu-list {
+            list-style-type: none;
+            width: 250px;
+            padding: 0;
+            margin: 0;
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            border: 1px solid white;
+            background-color: black;
+            top: 60px;
+            left: 0;
+            z-index: 1;
+        }
+
+            #menu-list li {
+                padding: 15px 15px;
+                border-bottom: 1px solid white;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+                #menu-list li i {
+                    margin-right: 10px;
+                    font-size: 18px;
+                }
+
+                #menu-list li:hover {
+                    background-color: #2b2b2b;
+                }
+
+                #menu-list li a {
+                    color: white;
+                    text-decoration: none;
+                    display: block;
+                    width: 100%;
+                }
+
+                #menu-list li:last-child {
+                    border-bottom: none;
+                }
+
+        #menu-list-activity {
+            list-style-type: none;
+            width: 250px;
+            padding: 0;
+            margin: 0;
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            border: 1px solid white;
+            background-color: black;
+            top: 60px;
+            right: 0;
+            z-index: 1;
+        }
+
+            #menu-list-activity li {
+                padding: 15px 15px;
+                border-bottom: 1px solid white;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+                #menu-list-activity li i {
+                    margin-right: 10px;
+                    font-size: 18px;
+                    width: 10%;
+                    text-align: center;
+                }
+
+                #menu-list-activity li:hover {
+                    background-color: #2b2b2b;
+                }
+
+                #menu-list-activity li a {
+                    color: white;
+                    text-decoration: none;
+                    display: block;
+                    width: 100%;
+                }
+
+                #menu-list-activity li:last-child {
+                    border-bottom: none;
+                }
+
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute; /* Фіксує елемент відносно вікна браузера */
+            top: 10px; /* Відступ зверху */
+            right: 10px; /* Відступ справа */
+        }
+
+        .image-avatar {
+            width: 50px;
+            height: 50px;
+            background-color: lightgrey;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+        .notification-container-all {
+            position: fixed;
+            bottom: 50px;
+            right: 50px;
+            z-index: 9999;
+            width: 300px;
+            background-color: transparent;           
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;                        
+        }
+        .notification-container {     
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            cursor: pointer;
+            background-color: black;
+            color: white;
+        }
+
+            .notification-container.show {
+                opacity: 1;
+            }
+
+        .notification {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            border-radius: 5px;
+            gap: 10px;
+        }        
+
+        .notification-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .notification-name {
+            font-weight: bold;
+        }
+
+        /* КОНТЕЙНЕР ВМІСТУ СТОРІНКИ */
+        .main {
+            width: 100%;
+            background: black;
+        }
+    </style>
+    @RenderSection("HeadEnd", required: false)
+</head>
+<body>
+    <header>
+        <div class="menu-icon" onclick="toggleMenu()" title="Menu">&#9776;</div>
+        <ul id="menu-list">
+            <li><i class="fas fa-home"></i><a href="/Main/Main">Main</a></li>
+            <li><i class="fas fa-shopping-cart"></i><a href="/Shop/Main">Shop</a></li>
+            <li><i class="fas fa-comments"></i><a href="/Chat/MainChat">Chat</a></li>
+            <li><i class="fas fa-cog"></i><a href="/Main/Setting">Settings</a></li>
+            <li><i class="fas fa-user-circle"></i><a href="/Main/Profile">My Profile</a></li>
+            <li><i class="fas fa-plus-circle"></i><a href="/Main/Profile?modal=true">Create</a></li>
+            <li><i class="fas fa-images"></i><a href="/Gallery/SelectEra">Gallery</a></li>
+            <li><i class="fas fa-palette"></i><a href="/Artist/Painters">Artists</a></li>
+            <li><i class="fas fa-university"></i><a href="#">Museums</a></li>
+            <li><i class="fas fa-calendar-alt"></i><a href="#">Events</a></li>
+            <li><i class="fas fa-users"></i><a href="#">Groups</a></li>
+        </ul>
+        <a href="/Main/Main" class="logo-ref logo">ArtChâteau</a>
+        <div class="header-icons">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" class="userSearch" id="userSearch" placeholder="Search users..." onkeyup="searchUsers()" onfocus="searchUsers()" />
+                <div class="searchResults" id="searchResults" style="display:none;"></div>
+            </div>
+            <a href="/Shop/Main" title="Shop">
+                <i class="fas fa-shopping-cart"></i>
+            </a>
+            <a href="/Order/Main" title="My Orders">
+                <i class="fas fa-shopping-bag"></i>
+            </a>
+            <a href="/Main/Profile" title="My Profile">
+                <i class="fas fa-user"></i>
+            </a>            
+            <div class="menu-icon-activity" onclick="toggleMenuActivity()" title="My Activity"><i class="fas fa-list-alt"></i></div>
+            <ul id="menu-list-activity">
+                <li><i class="fas fa-heart"></i><a href="/Main/LikedProfilePictures">Liked profile pictures</a></li>
+                <li><i class="fas fa-heart"></i><a href="/Main/LikedShopPictures">Liked shop pictures</a></li>
+                <li><i class="fas fa-bookmark"></i><a href="/Main/SavedProfilePictures">Save profile pictures</a></li>
+            </ul>
+            <div class="avatar-circle">
+                <a href="" id="avatar-href">
+                    <img class="image-avatar" id="avatar" src="#" alt="" />                    
+                </a>
+            </div>
+
+            <a href="/Chat/MainChat" class="notification-icon" title="My Chats">
+                <i class="fas fa-envelope"></i>
+                <span class="unreadMsg-count" id="unreadMsg-count">?</span>
+            </a>
+            <form id="logoutForm" action="@Url.Action("Logout", "Account")" method="post" style="display:none;"></form>
+            <a href="#" onclick="document.getElementById('logoutForm').submit();" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </header>
+    <div class="main">
+        @RenderBody()
+    </div>
+
+    @RenderSection("BodyEnd", required: false)
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetchCurrentUser();
+            fetchUnreadMessagesCount();
+        });
+        function fetchCurrentUser() {
+            // Выполняем запрос к серверу
+            fetch('/Main/GetUser') // Путь к вашему методу контроллера
+                .then(response => response.json()) // Конвертируем ответ в JSON
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error); // Обрабатываем ошибки
+                        return;
+                    }
+
+                    // Если у пользователя есть аватар, обновляем элемент изображения
+                    const avatarElement = document.getElementById('avatar');
+                    const avatarElementHref = document.getElementById('avatar-href');
+                    if (data.avatarBase64) {
+                        avatarElement.src = `data:image/png;base64,${data.avatarBase64}`; // Устанавливаем изображение как Base64
+                        avatarElementHref.href = `/Main/Profile/${data.id}`
+                    } else {
+                        avatarElement.src = 'default-avatar.png'; // Если изображения нет, устанавливаем аватар по умолчанию
+                    }
+                    avatarElement.alt = `${data.name}'s Avatar`;
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }
+
+        async function fetchUnreadMessagesCount() {
+            const response = await fetch('/Chat/GetUnreadMessagesCount', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Кількість непрочитаних повідомлень: ${data.UnreadCount}`);
+
+                // Оновлюємо текст в елементі span
+                document.getElementById('unreadMsg-count').textContent = data.unreadCount;
+            } else {
+                console.error('Не вдалося отримати кількість непрочитаних повідомлень');
+            }
+        }
+
+        function toggleMenu() {
+            var menu = document.getElementById("menu-list");
+            if (menu.style.display === "none" || menu.style.display === "") {
+                menu.style.display = "flex";
+            } else {
+                menu.style.display = "none";
+            }
+        }
+        function toggleMenuActivity() {
+            var menu = document.getElementById("menu-list-activity");
+            if (menu.style.display === "none" || menu.style.display === "") {
+                menu.style.display = "flex";
+            } else {
+                menu.style.display = "none";
+            }
+        }
+        function searchUsers() {
+            var query = document.getElementById('userSearch').value;
+
+            if (query.length === 0) {
+                document.getElementById('searchResults').style.display = 'none';
+                return;
+            }
+
+            fetch(`/Main/SearchUsers?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    var resultsContainer = document.getElementById('searchResults');
+                    resultsContainer.innerHTML = '';
+
+                    if (data.length > 0) {
+                        data.forEach(user => {
+                            var userLink = document.createElement('div');
+                            userLink.innerHTML = `
+                            <a href="/Main/FriendProfile/${user.id}" class="user-link">
+                                <img alt="${user.fullName}" src="data:image/jpeg;base64,${user.image}" class="user-image" />
+                                ${user.fullName}
+                                </a>
+                            `;
+                            resultsContainer.appendChild(userLink);
+                        });
+                        resultsContainer.style.display = 'block'; // Показуємо результати
+                    } else {
+                        resultsContainer.style.display = 'none'; // Сховати, якщо немає результатів
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        // Закриваємо меню і результати пошуку при кліку поза їх межами
+        document.addEventListener('click', function (event) {
+            var menu = document.getElementById("menu-list");
+            var menuActivity = document.getElementById("menu-list-activity");
+            var searchResults = document.getElementById('searchResults');
+            var searchInput = document.getElementById('userSearch');
+            var menuIcon = document.querySelector('.menu-icon');
+            var menuIconActivity = document.querySelector('.menu-icon-activity');
+
+            // Закриваємо меню, якщо клік поза меню і поза іконкою меню
+            if (menu && menu.style.display === "flex" && !menu.contains(event.target) && !menuIcon.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+            if (menuActivity && menuActivity.style.display === "flex" && !menuActivity.contains(event.target) && !menuIconActivity.contains(event.target)) {
+                menuActivity.style.display = 'none';
+            }
+
+            // Закриваємо результати пошуку, якщо клік поза полем пошуку та результатами
+            if (searchResults && searchResults.style.display === "block" && !searchResults.contains(event.target) && !searchInput.contains(event.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // Запобігаємо приховуванню меню при кліку на іконку меню
+        document.querySelector('.menu-icon').addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+
+        document.querySelector('.menu-icon-activity').addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+
+        // Запобігаємо приховуванню результатів при кліку на поле пошуку
+        document.getElementById('userSearch').addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+
+        // ЗАПУСК І ФУНКЦІОНУВАННЯ SIGNALR
+
+        var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+        connection.start().then(() => {
+            console.log("Підключено до SignalR!");
+        }).catch(err => console.error("Помилка підключення: ", err));
+
+
+        connection.on("ReceivePrivateMessage", function (message, senderId) {
+            console.log(message);
+            console.log(senderId);
+            addPrivateMessageToChat(message, senderId);
+        });
+        connection.on("ReceivePrivateMessageWithImage", function (message, senderId, base64Image) {
+            // console.log(message);
+            addPrivateMessageToChatWithImage(message, senderId, base64Image);
+        });
+
+        function addPrivateMessageToChat(message, senderId) {
+            var messagesDiv = document.getElementById('messages');
+
+            // if потрібний лише на сторінці Chat
+            if (messagesDiv && messagesDiv.getAttribute('data-id') == senderId) {
+                var unReadedMessageSpan = document.querySelector('.unReadedMessageSpan');
+                console.log(message);
+
+                // Якщо елемент не знайдено, створюємо новий
+                if (!unReadedMessageSpan) {
+                    unReadedMessageSpan = document.createElement('span');
+                    unReadedMessageSpan.classList.add('unReadedMessageSpan');
+                    unReadedMessageSpan.id = 'unReadedMessageSpan';
+                    unReadedMessageSpan.textContent = 'Unreaded messages';
+                    messagesDiv.appendChild(unReadedMessageSpan);
+                }
+
+                var messageDiv = document.createElement('div');
+                messageDiv.classList.add('receiver', 'message');
+
+                var textDiv = document.createElement('div');
+                textDiv.classList.add('receiver-msg');
+
+                var imgDiv = document.createElement('div');
+                imgDiv.classList.add('receiver-img');
+
+                var img = document.createElement('img');
+                img.classList.add('image-friend-chat');
+
+                // Отримуємо зображення з тега <img> з id "toCopy"
+                var toCopyImage = document.getElementById('toCopy');
+                img.src = toCopyImage ? toCopyImage.src : ''; // Перевірка на null
+
+                imgDiv.appendChild(img);
+
+                var messageSpan = document.createElement('span');
+                messageSpan.textContent = message;
+                textDiv.appendChild(messageSpan);
+
+                // Додавання блоку з часовою міткою
+                var timestampSpan = document.createElement('span');
+                timestampSpan.classList.add('message-timestamp');
+                timestampSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                textDiv.appendChild(timestampSpan);
+
+                // Додаємо текст повідомлення до основного блоку
+                messageDiv.appendChild(imgDiv);
+                messageDiv.appendChild(textDiv);
+
+                // Додаємо нове повідомлення до блоку чату у Chat
+                messagesDiv.appendChild(messageDiv);
+            }
+
+            if (messagesDiv) {
+                console.log(message);
+                var lastMessageSpan = document.getElementById(`last-message-${senderId}`);
+                if (lastMessageSpan) {
+                    lastMessageSpan.textContent = message;
+                }
+
+                // Оновлення кількості непрочитаних повідомлень
+                var unreadCountSpan = document.getElementById(`unread-${senderId}`);
+                if (unreadCountSpan) {
+                    var currentUnreadCount = parseInt(unreadCountSpan.textContent) || 0;
+                    unreadCountSpan.textContent = currentUnreadCount + 1;
+                } else {
+                    var userItemDiv = document.getElementById(`user-item-${senderId}`);
+                    if (userItemDiv) {
+                        var unreadDiv = document.createElement('div');
+                        unreadDiv.className = 'unread-count';
+
+                        var newUnreadCountSpan = document.createElement('span');
+                        newUnreadCountSpan.id = `unread-${senderId}`;
+                        newUnreadCountSpan.textContent = '1';
+
+                        unreadDiv.appendChild(newUnreadCountSpan);
+                        userItemDiv.appendChild(unreadDiv);
+                    }
+                }
+
+                moveSenderItemToTop(senderId);
+            }
+
+            console.log(message);
+            fetchUnreadMessagesCount();
+
+            if (!messagesDiv) {
+                showNotification(message, senderId);
+            }
+
+            // Прокрутка чату вниз до нового повідомлення
+            if (messagesDiv) {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
+
+        // Функція для показу сповіщення
+        function showNotification(message, senderId, base64Image) {
+            console.log(base64Image);
+            // Використовуємо fetch для надсилання POST-запиту
+            fetch('/Chat/GetSenderInfo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: senderId
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Створюємо контейнер для сповіщень, якщо він ще не існує
+                    let notificationContainerAll = document.querySelector('.notification-container-all');
+                    if (!notificationContainerAll) {
+                        notificationContainerAll = document.createElement('div');
+                        notificationContainerAll.classList.add('notification-container-all');
+                        document.body.appendChild(notificationContainerAll);
+                    }
+                    const notificationContainer = document.createElement('div');
+                    notificationContainer.classList.add('notification-container');
+
+                    // Створюємо елемент для сповіщення
+                    const notification = document.createElement('div');
+                    notification.classList.add('notification');
+
+                    // Додаємо фото, ПІБ відправника та повідомлення
+                    const img = document.createElement('img');
+                    img.src = `data:image/jpeg;base64,${data.image}`; // Припускаємо, що сервер повертає base64-кодоване зображення
+                    img.alt = data.fullName;
+                    img.classList.add('notification-img'); // Додаємо стилі для зображення
+
+                    const name = document.createElement('div');
+                    name.textContent = data.fullName;
+                    name.classList.add('notification-name'); // Додаємо стилі для ПІБ
+                    console.log(base64Image);
+                    if (base64Image) {  
+                    var imagePreview = document.createElement('img');
+                    imagePreview.src = `data:image/jpeg;base64,${base64Image}`;
+                    imagePreview.classList.add('message-image');
+                    }
+
+                    const messageSpan = document.createElement('span');
+                    messageSpan.textContent = message;
+
+                    // Додаємо елементи в сповіщення
+                    notification.appendChild(img);
+                    notification.appendChild(name);
+                   
+
+                    // Додаємо сповіщення в контейнер
+                    notificationContainer.appendChild(notification);
+                    if (base64Image) {
+                        notificationContainer.appendChild(imagePreview);
+                    }
+                    notificationContainer.appendChild(messageSpan);
+
+                    notificationContainerAll.appendChild(notificationContainer);
+
+                    // Додаємо обробку кліку для переходу до MainChat
+                    notificationContainer.addEventListener('click', () => {
+                        // Переходимо на сторінку MainChat з передачею senderId як receiverId
+                        window.location.href = `/Chat/MainChat?receiverId=${senderId}`;
+                    });
+
+                    // Показуємо сповіщення з анімацією
+                    setTimeout(() => {
+                        notificationContainer.classList.add('show');
+                    }, 100); // Невелика затримка для плавного показу
+
+                    // Автоматично видаляємо сповіщення через 20 секунд
+                    setTimeout(() => {
+                        notificationContainer.classList.remove('show');
+                        setTimeout(() => {
+                            notificationContainer.remove();
+                        }, 500); // Затримка для плавного зникнення
+                    }, 10000); // Сповіщення зникає через 20 секунд
+                })
+                .catch(error => {
+                    console.error('Помилка при отриманні даних відправника:', error);
+                });
+        }       
+
+        // Функція для відправки повідомлення
+        function sendMessage(event) {
+            // Якщо подія є натисканням Enter, запобігаємо стандартній поведінці
+            if (event && event.type === "keypress" && event.key !== "Enter") {
+                return; // Якщо це не Enter, нічого не робимо
+            }
+            // Отримуємо елементи
+            const sendButton = document.getElementById("sendButton");
+            const messageInput = document.getElementById("messageInput");
+            const receiverInput = document.getElementById("receiverInput");
+
+            var receiverId = receiverInput.value;
+            var senderId = senderInput.value;
+            var message = messageInput.value.trim();
+            if (message === "") {
+                alert("Message cannot be empty."); // Показуємо повідомлення про помилку
+                return; // Не відправляємо пусте повідомлення
+            }
+            // Викликаємо метод SendMessage на сервері через SignalR
+            connection.invoke("SendPrivateMessage", senderId, receiverId, message).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            var messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'sender');
+            var textDiv = document.createElement('div');
+            textDiv.classList.add('sender-msg');
+
+            var messageSpan = document.createElement('span');
+            messageSpan.textContent = message;
+            textDiv.appendChild(messageSpan);
+
+            // Додавання блоку з часовою міткою
+            var timestampSpan = document.createElement('span');
+            timestampSpan.classList.add('message-timestamp');
+            timestampSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            textDiv.appendChild(timestampSpan);
+
+            // Додаємо текст повідомлення до основного блоку
+            messageDiv.appendChild(textDiv);
+
+            // Додаємо нове повідомлення до блоку чату
+            document.getElementById('messages').appendChild(messageDiv);
+            var lastMessageSpan = document.getElementById(`last-message-${receiverId}`);
+            if (lastMessageSpan) {
+                lastMessageSpan.textContent = message; // Оновлюємо текст останнього повідомлення
+            }
+
+            // Прокрутка чату вниз до нового повідомлення
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+
+            // Скидаємо значення текстового поля після відправки повідомлення
+            messageInput.value = '';
+            moveUserItemToTop();
+
+            // Якщо це подія клавіатури, запобігаємо стандартній поведінці
+            if (event) {
+                event.preventDefault();
+            }
+        }
+
+        // Обробник подій для кнопки
+        sendButton.addEventListener("click", sendMessage);
+
+        // Обробник подій для поля вводу повідомлення
+        messageInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") { // Перевірка, чи була натиснута клавіша Enter
+                sendMessage(event); // Викликаємо функцію відправки
+            }
+        });
+
+        function sendMessageWithImage() {
+            const fileInput = document.getElementById("fileInput");
+            const captionInput = document.getElementById("captionInput");
+            const receiverInput = document.getElementById("receiverInput");
+            const senderInput = document.getElementById("senderInput");
+
+            var receiverId = receiverInput.value;
+            var senderId = senderInput.value;
+            var message = captionInput.value.trim();
+            var file = fileInput.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function () {
+                    // Отримуємо base64 рядок після завершення зчитування файлу
+                    const base64Image = reader.result.split(',')[1];
+                    console.log(base64Image);
+                    // Викликаємо метод SendPrivateMessageWithImage на сервері через SignalR після того, як файл був зчитаний
+                    connection.invoke("SendPrivateMessageWithImage", senderId, receiverId, message, base64Image)
+                        .then(() => {
+                            // Додавання нового повідомлення у чат після успішної відправки
+                            var messageDiv = document.createElement('div');
+                            messageDiv.classList.add('message', 'sender');
+
+                            var textDiv = document.createElement('div');
+                            textDiv.classList.add('sender-msg');
+
+                            // Додаємо зображення, якщо воно було вибране
+                            var imagePreview = document.createElement('img');
+                            imagePreview.src = URL.createObjectURL(file);
+                            imagePreview.classList.add('message-image');
+                            textDiv.appendChild(imagePreview);
+
+                            var messageSpan = document.createElement('span');
+                            messageSpan.textContent = message;
+                            textDiv.appendChild(messageSpan);
+
+                            // Додаємо часову мітку
+                            var timestampSpan = document.createElement('span');
+                            timestampSpan.classList.add('message-timestamp');
+                            timestampSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            textDiv.appendChild(timestampSpan);
+
+                            messageDiv.appendChild(textDiv);
+
+                            // Додаємо нове повідомлення до блоку чату
+                            document.getElementById('messages').appendChild(messageDiv);
+                            var lastMessageSpan = document.getElementById(`last-message-${receiverId}`);
+                            if (lastMessageSpan) {
+                                lastMessageSpan.textContent = message; // Оновлюємо текст останнього повідомлення
+                            }
+                            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+
+                            // Очищаємо поля після відправки
+                            captionInput.value = '';
+                            fileInput.value = '';
+                            var output = document.getElementById('image-preview-modal');
+                            output.src = '';
+                            moveUserItemToTop();
+                            closeModal(); // Закриваємо модальне вікно після відправки
+                        })
+                        .catch(function (err) {
+                            console.error(err.toString());
+                        });
+                };
+
+                // Конвертуємо файл у base64 до відправки
+                reader.readAsDataURL(file);
+            }
+        }        
+
+        function addPrivateMessageToChatWithImage(message, senderId, base64Image) {
+            var messagesDiv = document.getElementById('messages');
+
+            // if потрібний лише на сторінці Chat
+            if (messagesDiv && messagesDiv.getAttribute('data-id') == senderId) {
+                var unReadedMessageSpan = document.querySelector('.unReadedMessageSpan');
+
+                // Якщо елемент не знайдено, створюємо новий
+                if (!unReadedMessageSpan) {
+                    unReadedMessageSpan = document.createElement('span');
+                    unReadedMessageSpan.classList.add('unReadedMessageSpan');
+                    unReadedMessageSpan.id = 'unReadedMessageSpan';
+                    unReadedMessageSpan.textContent = 'Unreaded messages';
+                    messagesDiv.appendChild(unReadedMessageSpan);
+                }
+
+                var messageDiv = document.createElement('div');
+                messageDiv.classList.add('receiver', 'message');
+
+                var textDiv = document.createElement('div');
+                textDiv.classList.add('receiver-msg');
+
+                var imgDiv = document.createElement('div');
+                imgDiv.classList.add('receiver-img');
+
+                var img = document.createElement('img');
+                img.classList.add('image-friend-chat');
+
+                // Отримуємо зображення з тега <img> з id "toCopy"
+                var toCopyImage = document.getElementById('toCopy');
+                img.src = toCopyImage ? toCopyImage.src : ''; // Перевірка наявності зображення
+
+                imgDiv.appendChild(img);
+
+                // Додаємо зображення повідомлення
+                var imagePreview = document.createElement('img');
+                imagePreview.src = `data:image/jpeg;base64,${base64Image}`;
+                imagePreview.classList.add('message-image');
+                textDiv.appendChild(imagePreview);
+
+                // Додаємо текст повідомлення
+                var messageSpan = document.createElement('span');
+                messageSpan.textContent = message;
+                textDiv.appendChild(messageSpan);
+
+                // Додавання блоку з часовою міткою
+                var timestampSpan = document.createElement('span');
+                timestampSpan.classList.add('message-timestamp');
+                timestampSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                textDiv.appendChild(timestampSpan);
+
+                // Додаємо текст і зображення повідомлення до основного блоку
+                messageDiv.appendChild(imgDiv);
+                messageDiv.appendChild(textDiv);
+
+                // Додаємо нове повідомлення до блоку чату
+                messagesDiv.appendChild(messageDiv);
+            }
+
+            if (messagesDiv) {
+                // Оновлюємо текст останнього повідомлення
+                var lastMessageSpan = document.getElementById(`last-message-${senderId}`);
+                if (lastMessageSpan) {
+                    lastMessageSpan.textContent = message;
+                }
+
+                // Оновлюємо кількість непрочитаних повідомлень у Chat
+                var unreadCountSpan = document.getElementById(`unread-${senderId}`);
+                if (unreadCountSpan) {
+                    var currentUnreadCount = parseInt(unreadCountSpan.textContent) || 0;
+                    unreadCountSpan.textContent = currentUnreadCount + 1;
+                } else {
+                    var userItemDiv = document.getElementById(`user-item-${senderId}`);
+                    if (userItemDiv) {
+                        var unreadDiv = document.createElement('div');
+                        unreadDiv.className = 'unread-count';
+                        var newUnreadCountSpan = document.createElement('span');
+                        newUnreadCountSpan.id = `unread-${senderId}`;
+                        newUnreadCountSpan.textContent = '1';
+                        unreadDiv.appendChild(newUnreadCountSpan);
+                        userItemDiv.appendChild(unreadDiv);
+                    }
+                }
+
+                moveSenderItemToTop(senderId);
+            }
+
+            console.log(base64Image);
+            fetchUnreadMessagesCount();
+
+            if (!messagesDiv) {
+                showNotification(message, senderId, base64Image);
+            }
+
+            // Прокрутка чату вниз до нового повідомлення
+            if (messagesDiv) {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
+        saveButton.addEventListener("click", sendMessageWithImage);
+    </script>
+</body>
+</html>

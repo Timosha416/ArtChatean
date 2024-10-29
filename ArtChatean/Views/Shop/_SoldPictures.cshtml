@@ -1,0 +1,112 @@
+﻿@using ArtChatean.Models;
+
+@model List<Picture>
+
+<div class="button-shop">
+    <a href="@Url.Action("Main", new { section = "PictureGallery" })" class="add-product-btn">Go to shop</a>
+    <a href="@Url.Action("Main", new { section = "AddEditPicture" })" class="add-product-btn">View my pictures</a>
+</div>
+
+<h2>Sold pictures</h2>
+@foreach (var picture in Model.Where(p => p.IsSold == true).OrderByDescending(p => p.PictureOrders.FirstOrDefault().Order.OrderDate))
+{
+    <div class="image-details">
+        <div class="main-image">
+            <a href="@Url.Action("Picture", "Shop", new { id = picture.Id })" class="username-link">
+            @if (picture.Image != null && picture.Image.Length > 0)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Title" />
+            }
+            else
+            {
+                <img src="#" alt="Profile Image" />
+            }
+            </a>
+        </div>
+        <div class="details">
+            <p><b>Order №: @picture.PictureOrders.FirstOrDefault().Order.Number</b></p>
+            <p>Sold date: @picture.PictureOrders.FirstOrDefault().Order.OrderDate</p>
+            <p>Customer: <a href="@Url.Action("FriendProfile", "Main", new { id = @picture.PictureOrders.FirstOrDefault().Order.Customer.Id })" class="username-link">@picture.PictureOrders.FirstOrDefault().Order.Customer.FullName</a></p>
+            <p>E-mail: @picture.PictureOrders.FirstOrDefault().Order.Customer.Email</p>
+            @{
+                var address = picture.PictureOrders.FirstOrDefault().Order.Customer.Addresses.FirstOrDefault();
+            }
+            <p>Address:  @address.PostalCode, @address.Country, @address.City,  @address.Street</p>
+           
+            <p>Title: @picture.Title</p>
+            <p>Price: @picture.Price?.ToString("0.00") $</p>
+            <p>Description: @picture.Description</p>
+        </div>
+    </div>
+}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Обробляємо всі select елементи при завантаженні сторінки
+        document.querySelectorAll('.shop-select').forEach(select => {
+            // Функція для оновлення фону
+            const updateBackgroundColor = () => {
+                if (select.value) {
+                    select.style.backgroundColor = '#d0f0c0';
+                } else {
+                    select.style.backgroundColor = '';
+                }
+            };
+            // Оновлюємо фон при завантаженні сторінки
+            updateBackgroundColor();
+            // Додаємо обробник зміни значення
+            select.addEventListener('change', updateBackgroundColor);
+        });
+    });
+    function triggerNewFileUpload() {
+        document.getElementById('image-upload').click();
+    }
+
+    function previewNewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('image-preview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+    function triggerFileUpload(pictureId) {
+        document.getElementById('image-upload-' + pictureId).click();
+    }
+
+    function previewImage(event, pictureId) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('image-preview-' + pictureId);
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+    function deletePicture(element) {
+        var pictureId = element.getAttribute('data-id');
+        var confirmed = confirm("Are you sure you want to delete this picture?");
+        if (confirmed) {
+            fetch('/Shop/DeletePicture', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: pictureId
+            })
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('picture-' + pictureId).remove();
+                    } else {
+                        alert("Failed to delete picture.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("An error occurred.");
+                });
+        }
+    }
+</script>
+

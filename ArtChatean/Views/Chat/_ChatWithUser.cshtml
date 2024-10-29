@@ -1,0 +1,90 @@
+﻿@using ArtChatean.Models;
+
+@model List<ChatMessage>
+@{
+    ViewBag.Title = "Main Chat";
+    var friends = ViewBag.Friends as IEnumerable<dynamic>;
+    bool unreadMessageSpanAdded = false; // Флаг для відстеження, чи додали спан    
+}
+
+<div class="chat-messages" id="messages" data-id="@ViewBag.ReceiverId">
+    @if (Model != null && Model.Any())
+    {
+        <a href="#" onclick="updateChat(); return false;" class="load-more-messages">Upload 20 last messages</a>
+        @foreach (var message in Model)
+        {
+            var friendId = message.SenderId == ViewBag.SenderId ? message.ReceiverId : message.SenderId;
+            var friend = friends.FirstOrDefault(uf => uf.Id == friendId);
+            // Додаємо <span> перед першим непрочитаним повідомленням
+            if (!message.IsRead && !unreadMessageSpanAdded && message.SenderId != ViewBag.SenderId)
+            {
+                <span class="unReadedMessageSpan" id="unReadedMessageSpan">Unreaded messages</span>
+                unreadMessageSpanAdded = true; // Встановлюємо флаг, щоб додати спан тільки один раз
+            }
+
+            <div class="message @(message.SenderId == ViewBag.SenderId ? "sender" : "receiver")">
+                <div class="@(message.SenderId == ViewBag.SenderId ? "sender-img" : "receiver-img")">
+                    @if (message.SenderId != ViewBag.SenderId && friend != null && friend.Image != null && friend.Image.Length > 0)
+                    {
+                        <img class="image-friend-chat" src="data:image/jpeg;base64,@Convert.ToBase64String(friend.Image)" alt="Friend Image" />
+                    }
+                </div>
+                <div class="@(message.SenderId == ViewBag.SenderId ? "sender-msg" : "receiver-msg")">
+                    @if (message.MessageImage != null && message.MessageImage.Length > 0)
+                    {
+                        string base64Image = Convert.ToBase64String(message.MessageImage);
+                        <img class="message-image" src="data:image/jpeg;base64,@base64Image" alt="Message Image" />
+                    }
+                    <span>@message.MessageText</span>
+                    <span class="message-timestamp">
+                        @{
+                            var isToday = DateTime.Now.Date == message.Timestamp.Date;
+                        }
+                        @if (isToday)
+                        {
+                            @message.Timestamp.ToString("HH:mm")                            
+                        }
+                        else
+                        {
+                            @message.Timestamp.ToString("dd.MM.yyyy HH:mm")                            
+                        }
+                    </span>
+                </div>
+            </div>
+        }
+    }    
+</div>
+
+@if (friends != null && friends.Any())
+{
+    <div class="message-input">
+        <input type="hidden" id="senderInput" value="@ViewBag.SenderId" />
+        <input type="hidden" id="receiverInput" value="@ViewBag.ReceiverId" />
+        <textarea id="messageInput" placeholder="Send message..." rows="2" required></textarea>
+        <button class="emoji-button" id="emoji-button">
+            😊
+        </button>
+        <button class="image-icon-label" onclick="openModal()">
+            <i class="fa fa-paperclip"></i>
+        </button>
+        <button id="sendButton" type="button">Send</button>
+    </div>
+}
+
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Add picture for message</h2>
+        <div class="upload-area" id="uploadArea">
+            @* <p>Drag photos and videos here</p> *@
+            <img id="image-preview-modal" />
+            <button class="uploadButton" onclick="triggerFileInput()">Select from computer</button>
+            <input type="file" name="Image" id="fileInput" style="display: none;" onchange="previewImage(event)" />
+        </div>
+        <div class="caption-area">
+            <label for="captionInput">Text:</label>
+            <input type="text" id="captionInput" name="Caption" placeholder="Enter caption here" />
+        </div>
+        <button type="button" class="saveButton" id="saveButton" style="display: none;">Send message</button>
+    </div>
+</div>

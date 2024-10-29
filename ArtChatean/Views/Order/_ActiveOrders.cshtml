@@ -1,0 +1,152 @@
+﻿@model ArtChatean.Models.User
+
+@if (Model?.Orders != null && Model.Orders.Any())
+{
+    var incompleteOrders = Model.Orders.Where(order => !order.IsCompleted).ToList();
+
+    if (incompleteOrders.Any())
+    {
+        @foreach (var order in incompleteOrders)
+        {
+            <div class="order-full">
+            <div class="order-header" id="order-header">
+                <div class="order-number">Order №@order.Number</div>
+                <div class="order-status">
+                    <span>Expected to be completed</span>
+                    <span>@order.OrderDate.ToString("MMMM, yyyy")</span>
+                    <span>@((DateTime.Now - order.OrderDate).Days) days</span>
+                </div>
+            </div>
+            <div class="progress-bar" id="progress-bar">
+                <div class="completed">Ordered<br>@order.OrderDate.ToString("dd/MM/yy")<br>@order.OrderDate.ToString("HH:mm")</div>
+                <div>Shipped<br>@order.OrderDate.AddDays(2).ToString("dd/MM/yy")</div>
+                <div>Estimated delivery<br>@order.OrderDate.AddDays(10).ToString("dd/MM/yy")</div>
+            </div>
+            <div class="order-details" id="order-details">
+                <h3>Order details</h3>
+                @if (order.PictureOrders != null && order.PictureOrders.Any())
+                {
+                    @foreach (var pictureOrder in order.PictureOrders)
+                    {
+                        var picture = pictureOrder.Picture;
+                        if (picture != null)
+                        {
+                                <div class="order-item" id="order-item-@pictureOrder.Id">
+                                    <a href="@Url.Action("Picture", "Shop", new { id = picture.Id })" class="username-link">
+                                        @if (picture.Image != null && picture.Image.Length > 0)
+                                        {
+                                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Title" />
+                                        }
+                                        else
+                                        {
+                                            <img src="#" alt="Profile Image" />
+                                        }
+                                    </a>
+                                    <div class="order-item-info">
+                                        <div class="order-item-title">
+                                            <a href="@Url.Action("Picture", "Shop", new { id = picture.Id })" class="username-link">@picture.Title</a>
+                                            </div>
+                                        <div class="order-item-author">
+                                            Author: 
+                                            <a href="@Url.Action("FriendProfile", "Main", new { id = picture.User.Id })" class="username-link">
+                                               @picture.User.FullName
+                                                </a>
+                                        </div>
+                                    </div>
+                                    @* <div class="order-item-qty">QTY: 1</div> *@
+                                    <div class="order-item-price">$@picture.Price?.ToString("0.00")</div>
+                                    <button class="delete-button" data-id="@pictureOrder.Id" onclick="deletePictureOrder(this)">Delete</button>
+                                </div>
+                        }
+                    }
+                    <div class="order-summary" id="order-summary-@order.Id">
+                        <a href="/Order/Checkout/" class="redirect-button">Buy</a>
+                            <div class="order-total">Total: $@order.PictureOrders.Sum(po => po.Picture.Price)?.ToString("0.00")</div>
+                    </div>
+                }
+                else
+                {
+                    <div>No pictures found for this order.</div>
+                }
+            </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div>No active orders found.</div>
+    }
+}
+else
+{
+    <div>No orders found.</div>
+}
+<script>
+    function deletePictureOrder(element) {
+        var pictureOrderId = element.getAttribute('data-id');
+        var confirmed = confirm("Are you sure you want to delete this picture from the order?");
+        if (confirmed) {
+            fetch('/Order/DeletePictureOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: pictureOrderId
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Видаляємо елемент з DOM
+                        var orderItem = document.getElementById(`order-item-${pictureOrderId}`);
+                        if (orderItem) {
+                            orderItem.remove();
+                            updateOrderTotal();
+                            // Перевіряємо, чи залишились елементи у замовленні
+                            var remainingItems = document.querySelectorAll('.order-item').length;
+                            if (remainingItems === 0) {
+                                var orderItems = document.querySelectorAll('.order-details');
+                                orderItems.forEach(function (item) {
+                                    item.remove();
+                                });
+                                var progressBars = document.querySelectorAll('.progress-bar');
+                                progressBars.forEach(function (bar) {
+                                    bar.remove();
+                                });
+                                var orderHeaders = document.querySelectorAll('.order-header');
+                                orderHeaders.forEach(function (header) {
+                                    header.remove();
+                                });
+                                var orderHeaders = document.querySelectorAll('.order-full');
+                                orderHeaders.forEach(function (header) {
+                                    header.remove();
+                                });
+                                var order = document.getElementById('order');
+                                const newDiv = document.createElement('div');
+                                newDiv.textContent = 'No active orders found.';
+                                order.appendChild(newDiv);
+                            }
+                        }
+                    } else {
+                        alert('Failed to delete the picture.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
+    function updateOrderTotal() {
+        var itemPrices = document.querySelectorAll('.order-item-price');
+        var total = 0;
+        itemPrices.forEach(function (priceElement) {
+            var priceText = priceElement.textContent.replace('$', '').trim();
+            var price = parseFloat(priceText);
+            if (!isNaN(price)) {
+                total += price;
+            }
+        });
+        var orderSummary = document.querySelector('.order-total');
+        if (orderSummary) {
+            orderSummary.textContent = 'Total: ' + total.toFixed(2) + '$';
+        }
+    }
+</script>

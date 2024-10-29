@@ -1,0 +1,187 @@
+﻿@model List<ArtChatean.Models.Artist>
+
+@{
+    Layout = "_MainLayout";
+}
+
+@section HeadEnd {
+    <style>
+        body {
+            margin: 0; /* Вимкнути відступи за замовчуванням */
+            padding: 0; /* Вимкнути відступи за замовчуванням */
+            overflow: hidden; /* Вимкнути прокручування сторінки */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            overflow: hidden;
+            justify-content: end;
+            align-items: end;
+            background-size: cover;
+            background-position: center;
+            background-color: transparent; /* Початково прозорий фон */
+            transition: background-image 0.5s ease-in-out, background-color 0.5s ease-in-out; /* Додаємо анімацію зміни зображення та кольору */
+        }
+
+        .sidebar {
+            width: 320px;
+            padding: 10px 0px 100px 0px;
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: scroll;
+            display: flex;
+            flex-direction: column;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+            .sidebar::-webkit-scrollbar {
+                display: none;
+            }
+
+            .sidebar .artist-item {
+                position: relative;
+                margin: 10px 40px;
+                padding: 0px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                flex-shrink: 0;
+            }
+
+                .sidebar .artist-item img {
+                    width: 100px;
+                    height: 100px;
+                    border-radius: 15px;
+                    transition: transform 0.3s ease;
+                }
+
+                    .sidebar .artist-item img:hover {
+                        transform: scale(1.1);
+                    }
+
+                .sidebar .artist-item .artist-name {
+                    position: absolute;
+                    left: 110px;
+                    white-space: nowrap;
+                    padding: 5px;
+                    border-radius: 5px;
+                    opacity: 0;
+                    transition: opacity 0.3s ease, transform 0.3s ease;
+                    transform: translateX(10px);
+                }
+
+                .sidebar .artist-item:hover .artist-name {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+
+        .main-content {
+            margin-left: 50px;
+            flex-grow: 1;
+            padding: 20px 0px 200px 0px;
+            border-radius: 15px;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+            .main-content.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .main-content h2 {
+                font-size: 50px;
+                font-weight: 300;
+                line-height: 61px;
+            }
+
+            .main-content p {
+                font-size: 25px;
+                font-weight: 300;
+                line-height: 30px;
+            }
+
+            .main-content .btn {
+                margin-top: 10px;
+                padding: 10px 40px;
+                border: 1px solid white;
+                background-color: transparent;
+                color: white;
+                cursor: pointer;
+                border-radius: 40px;
+                transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+            }
+
+                .main-content .btn:hover {
+                    background-color: white;
+                    color: black;
+                }
+    </style>
+}
+
+<div class="container">
+    <div class="sidebar">
+        @foreach (var artist in Model)
+        {
+            <div class="artist-item" data-id="@artist.Id" onclick="loadArtistDetails(@artist.Id)">
+                <img src="data:image/png;base64,@(artist.Photo != null ? Convert.ToBase64String(artist.Photo) : "default.png")" alt="@artist.FullName" />
+                <div class="artist-name">
+                    <span>@artist.FullName</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="main-content">
+        <h2 id="artist-name">Oscar-Claude Monet</h2>
+        <p id="artist-birth"><strong>Born:</strong> 14 Nov 1840 — Paris, Kingdom of France</p>
+        <p id="artist-death"><strong>Died:</strong> 5 Dec 1840 — Giverny, France</p>
+        <button class="btn" id="more-button">More</button>
+    </div>
+
+    <script>
+        const TranparentPhotoUrl = `/images/HD_transparent_picture.png`;
+        const container = document.querySelector('.container'); // Контейнер з фоном
+        container.style.backgroundImage = `url(${TranparentPhotoUrl})`;
+        function loadArtistDetails(artistId) {
+            fetch(`/Artist/Details/${artistId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const mainContent = document.querySelector('.main-content');
+                    const moreButton = document.getElementById('more-button');
+                    // Fade out and slide content out
+                    mainContent.style.opacity = 0;
+                    mainContent.style.transform = 'translateY(20px)';
+
+                    setTimeout(() => {
+                        // Update content
+                        document.getElementById('artist-name').innerText = data.fullName;
+                        document.getElementById('artist-birth').innerText = `Born: ${new Date(data.birthDate).toLocaleDateString()} — ${data.birthPlace}`;
+                        if (data.deathDate) {
+                            document.getElementById('artist-death').innerText = `Died: ${new Date(data.deathDate).toLocaleDateString()} — ${data.deathPlace}`;
+                        } else {
+                            document.getElementById('artist-death').innerText = '';
+                        }
+
+                        // Update the "More" button link dynamically
+                        moreButton.onclick = function () {
+                            window.location.href = `/Artist/Info/${artistId}`;
+                        };
+
+                        // Change background image
+                        const artistPhotoUrl = `data:image/png;base64,${data.veryBigPhoto}`;
+                        container.style.backgroundImage = `url(${artistPhotoUrl})`;
+
+                        // Fade in and slide content in
+                        mainContent.style.opacity = 1;
+                        mainContent.style.transform = 'translateY(0)';
+                    }, 300); // Delay for the fade-out animation
+                });
+        }
+    </script>
+</div>

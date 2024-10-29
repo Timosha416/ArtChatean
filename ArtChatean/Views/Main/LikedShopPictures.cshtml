@@ -1,0 +1,111 @@
+﻿@using ArtChatean.Models;
+
+@model List<Picture>
+@{
+    Layout = "_MainLayout";
+}
+
+@* <a href="@Url.Action("Main", new { section = "AddEditPicture" })" class="add-product-btn">View my pictures</a>
+<div class="pagination" name="page">
+    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+    {
+        <a href="javascript:void(0);"
+           onclick="updateGallery(@i);"
+           class="@(ViewBag.CurrentPage == i ? "active" : "")">@i</a>
+    }
+</div> *@
+<h1>Liked shop pictures</h1>
+<div class="profile-gallery">
+    @foreach (var picture in Model)
+    {
+        <div class="gallery-item">
+            
+                @if (picture.Image != null && picture.Image.Length > 0)
+                {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Subject" class="picture-link" onclick="redirectToPicture('@Url.Action("Picture", "Shop", new { id = picture.Id })')" />
+                }
+                else
+                {
+                <img src="#" alt="Profile Image" class="picture-link" onclick="redirectToPicture('@Url.Action("Picture", "Shop", new { id = picture.Id })')" />
+                }                
+           
+            <div class="gallery-info">
+                <p>Author: <a href="@Url.Action("FriendProfile", "Main", new { id =@picture.UserId })" class="username-link">@picture.User.FullName</a></p>                
+                <p>Title: @picture.Title</p>                
+            </div>
+
+        </div>
+    }
+</div>  
+
+<script>    
+    function redirectToPicture(url) {
+        window.location.href = url;
+    }
+</script>
+
+@section HeadEnd {
+    <style>
+        .main {
+            display: flex;      
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        .profile-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: left;
+            gap: 20px;
+            margin-bottom: 20px;
+            width: 80%;
+        }
+
+        .gallery-item {
+            width: calc(33.333% - 20px);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            aspect-ratio: 1 / 1;
+            gap: 5px;            
+        }
+           
+            .gallery-item img {
+                width: 100%;
+                height: 80%;
+                object-fit: cover;
+                display: block;
+                border: 2px solid white;
+                opacity: 1;                
+                transition: opacity 0.3s ease-in-out;
+                cursor: pointer;
+            }
+
+                .gallery-item img:hover {
+                    opacity: 0.5;
+                }
+
+        .username-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .username-link:hover {
+                text-decoration: underline; /* Підкреслення при наведенні */
+            }
+        /* ІНФОРМАЦІЯ ПРО КАРТИНУ */
+        .gallery-info {
+            display: flex;
+            flex-direction: column;
+            font-size: 16px;
+            height: 10%;            
+        }
+
+            .gallery-info p {
+                margin: 5px;
+                padding: 0px;
+            }
+    </style>
+}

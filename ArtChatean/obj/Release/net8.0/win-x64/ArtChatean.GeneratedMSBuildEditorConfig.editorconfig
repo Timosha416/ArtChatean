@@ -1,0 +1,163 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = true
+build_property.EnableTrimAnalyzer = 
+build_property.IncludeAllContentForSelfExtract = 
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = ArtChatean
+build_property.RootNamespace = ArtChatean
+build_property.ProjectDir = C:\Users\timos\source\repos\ArtChatean\ArtChatean\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\timos\source\repos\ArtChatean\ArtChatean
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Account/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Artist/Info.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXJ0aXN0XEluZm8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Artist/Painters.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXJ0aXN0XFBhaW50ZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Chat/MainChat.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hhdFxNYWluQ2hhdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Chat/_ChatWithUser.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hhdFxfQ2hhdFdpdGhVc2VyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Event/Events.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXZlbnRcRXZlbnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Event/Payment.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXZlbnRcUGF5bWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Event/PdfTicket.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXZlbnRcUGRmVGlja2V0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Event/PdfTickets.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXZlbnRcUGRmVGlja2V0cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Event/TicketSelection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXZlbnRcVGlja2V0U2VsZWN0aW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/FriendMain.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxGcmllbmRNYWluLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/FriendProfile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxGcmllbmRQcm9maWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/LikedProfilePictures.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxMaWtlZFByb2ZpbGVQaWN0dXJlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/LikedShopPictures.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxMaWtlZFNob3BQaWN0dXJlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/Main.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxNYWluLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/Profile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxQcm9maWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/SavedProfilePictures.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxTYXZlZFByb2ZpbGVQaWN0dXJlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/Setting.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxTZXR0aW5nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Main/_FriendsPosts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFpblxfRnJpZW5kc1Bvc3RzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/Checkout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcQ2hlY2tvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/Finish.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcRmluaXNoLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/Main.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcTWFpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/_ActiveOrders.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcX0FjdGl2ZU9yZGVycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/_Addresses.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcX0FkZHJlc3Nlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/_DoneOrders.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcX0RvbmVPcmRlcnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/_PaymentMethods.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcX1BheW1lbnRNZXRob2RzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Order/_Support.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcX1N1cHBvcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Shared/_AdminLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BZG1pbkxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Shared/_MainLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9NYWluTGF5b3V0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Shop/Main.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcFxNYWluLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Shop/Picture.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcFxQaWN0dXJlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Shop/_AddEditPicture.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcFxfQWRkRWRpdFBpY3R1cmUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Shop/_PictureGallery.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcFxfUGljdHVyZUdhbGxlcnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/timos/source/repos/ArtChatean/ArtChatean/Views/Shop/_SoldPictures.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcFxfU29sZFBpY3R1cmVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 

@@ -1,0 +1,84 @@
+﻿@model List<ArtChatean.Models.Era>
+
+@{
+    Layout = "_MainLayout";
+    ViewBag.Title = "Select Era";
+}
+
+<h1>Art Periods</h1>
+<div class="vector"></div>
+
+<div class="era-list">
+    @foreach (var era in Model)
+    {
+        <div class="era-item">
+            <a href="@Url.Action("Pictures", "Gallery", new { eraId = era.Id })">
+                @era.Name
+            </a>
+        </div>
+    }
+</div>
+
+<!-- CSS styles -->
+<style>
+    body {
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+
+    .vector {
+        text-align: center;
+        border: 0.001rem solid #D9D9D9;
+        width: 160px;
+        margin-left: 19px;
+        height: 0px;
+    }
+
+    h1 {
+        font-family: 'Inter';
+        font-style: normal;
+        text-align: left;
+        margin-left: 20px;
+        font-size: 30px;
+        font-weight: normal;
+        margin-bottom: 3px;
+    }
+
+    .era-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Два стовпці */
+        gap: 15px;
+        padding: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .era-item a {
+        display: block;
+        padding: 15px;
+        text-align: center;
+        background-color: transparent;
+        border: 1px solid white;
+        border-radius: 8px;
+        color: white;
+        text-decoration: none;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 18px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .era-item a:hover {
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        transition: background-color 0.3s ease, color 0.3s ease, font-weight 0.3s ease;
+    }
+
+        .era-item a {
+            font-size: 16px;
+            padding: 12px;
+        }
+    }
+</style>

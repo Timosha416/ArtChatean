@@ -1,0 +1,319 @@
+﻿@model ArtChatean.Models.Artist
+
+@{
+    Layout = "_MainLayout";
+}
+
+<div class="artist-info-container">
+    <!-- Велике ім'я художника -->
+
+    <div class="fullname-block" style="background-image: url('data:image/png;base64,@(Model.HeaderPicture != null ? Convert.ToBase64String(Model.HeaderPicture) : "default.png")'); background-size: cover; background-position: center;">
+        <h1 class="artist-name">@Model.FullName</h1>
+    </div>
+    <!-- Цитата -->
+    <div class="quote-block">
+        <p class="quote-text">"@Model.Quote"</p>
+    </div>
+
+    <!-- Інформація та біографія з фото -->
+    <div class="bio-section">
+        <div class="bio-text">
+            <h2>@Model.FullName</h2>
+            <p>@Model.Bio</p>
+            <button class="next-btn" onclick="location.href='@Url.Action("Painters", "Artist")'">Next</button>
+        </div>
+        <div class="artist-photo">
+            <img src="data:image/png;base64,@(Model.BigPhoto != null ? Convert.ToBase64String(Model.BigPhoto) : "default.png")" alt="@Model.FullName" />
+        </div>
+    </div>
+
+    <!-- Картини художника -->
+    <section class="overlapping">
+        <div class="grid-container">
+            <img src="data:image/png;base64,@(Model.Picture1 != null ? Convert.ToBase64String(Model.Picture1) : "default.png")" alt="Picture 1">
+            <img src="data:image/png;base64,@(Model.Picture2 != null ? Convert.ToBase64String(Model.Picture2) : "default.png")" alt="Picture 2">
+            <img src="data:image/png;base64,@(Model.Picture3 != null ? Convert.ToBase64String(Model.Picture3) : "default.png")" alt="Picture 3">
+            <img src="data:image/png;base64,@(Model.Picture4 != null ? Convert.ToBase64String(Model.Picture4) : "default.png")" alt="Picture 4">
+            <img src="data:image/png;base64,@(Model.Picture5 != null ? Convert.ToBase64String(Model.Picture5) : "default.png")" alt="Picture 5">
+        </div>
+    </section>
+
+    <!-- Відео -->
+    <div class="video-section">
+        <iframe width="1160" height="550" src="@Model.Video" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+
+    <!-- Місце перегляду картин -->
+    <div class="museum-info">
+        <p>You can see most of @Model.FullName's paintings at the Musée d'Orsay</p>
+    </div>
+
+    <!-- Кнопка покупки квитка та статичний текст з картинкою -->
+    <div class="ticket-section">
+        <div class="ticket-text">
+            <h2>About exhibition</h2>
+            <p>The Musée d'Orsay is proud to host a remarkable exhibition showcasing the works of a renowned artist. This highly anticipated event invites art enthusiasts and connoisseurs to immerse themselves in an extraordinary collection of paintings that highlight the innovative spirit and unique style of the featured artist. The exhibition promises to be a captivating journey through the artist's creative evolution, presenting a diverse range of pieces that exemplify their mastery and vision. Visitors will have the opportunity to explore various periods and themes, each artwork offering a glimpse into the artist's imaginative world. Set in the iconic Musée d'Orsay, the exhibition provides an ideal backdrop for appreciating these masterpieces. The museum's stunning architecture and rich history complement the artwork, creating an inspiring atmosphere for all attendees. Join us at the Musée d'Orsay to experience this exceptional showcase, celebrating a legacy of artistic brilliance and creativity. Don’t miss this chance to witness the genius of one of history's greatest artists in one of the world's most prestigious art institutions.</p>
+            <button class="buy-ticket-btn" onclick="location.href='@Url.Action("Events", "Event", new { artistId = Model.Id })'">Buy Ticket</button>
+        </div>
+        <div class="museum-image">
+            <img src="~/images/Museum.jpg" alt="Museum" />
+        </div>
+    </div>
+</div>
+
+<!-- CSS стилі -->
+@section HeadEnd {
+<style>
+        iframe {
+            width: 98%;
+            height: 36vw;
+            max-height: 100%;
+            border: 0;
+        }
+    .main {
+        width: 100%;
+        /* background: white; */
+    }
+    .artist-info-container {
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        /* color: #333; */
+    }
+
+        .artist-name {
+            font-size: 64px;
+            text-align: center;
+            margin: 40px 0;
+            font-family: 'Inter', sans-serif;
+            font-style: normal;
+            font-weight: 300;
+            line-height: 73px;
+            text-transform: uppercase;
+            transition: transform 0.5s ease, font-size 0.5s ease;
+        }
+
+            .artist-name:hover {
+                transform: scale(1.1);
+                font-size: 70px; /* Збільшення шрифту при наведенні */
+            }
+
+    .artwork-details {
+        text-align: left;
+        font-size: 14px;
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        /* color: #333; */
+    }
+
+        .fullname-block {
+            height: 960px;
+            margin: 0px -10px 20px -10px;
+            display: flex;
+            justify-content: center; /* горизонтальне центрування */
+            align-items: center; /* вертикальне центрування */
+            background-size: cover; /* Зображення займає всю площу елемента */
+            background-position: center; /* Центрування зображення */
+            background-repeat: no-repeat; /* Зображення не повторюється */
+            color: white; /* Білий колір тексту для кращої видимості */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Додаємо тінь для тексту */
+        }
+
+
+    .quote-block {
+        padding: 25px;
+        margin: 20px 0;
+        text-align: center;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300;
+        font-size: 25px;
+        line-height: 30px;
+        /* color: #000000; */
+    }
+
+    .bio-section {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 20px 60px 20px;
+    }
+
+    .bio-text {
+        flex: 2;
+        padding-right: 40px;
+    }
+
+        .bio-text h2 {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 30px;
+            line-height: 36px;
+        }
+
+        .bio-text p {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+    .artist-photo img {
+        width: 650px;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.5s ease, font-size 0.5s ease;
+    }
+
+            .artist-photo img:hover {
+                transform: scale(1.05);
+            }
+
+    .next-btn {
+        margin-top: 10px;
+        padding: 10px 40px;
+        border: 1px solid white;
+        background-color: transparent;
+        color: white;
+        cursor: pointer;
+        border-radius: 40px;
+        transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+    }
+
+        .next-btn:hover {
+            background-color: white;
+            color: black;
+        }
+
+        .grid-container {
+            padding: 15px;
+        }
+
+        .overlapping div {
+            display: grid;
+            grid-template-columns: 5fr 1fr 3fr 3fr 1fr 3fr 3fr;
+            max-width: 2425px;
+            margin: 40px auto;
+            grid-gap: 20px;
+            list-style: none;
+        }
+
+        .overlapping img {
+            position: relative;
+            overflow: hidden;
+            display: block;
+            width: 100%;
+            height: auto;
+            transition: transform 0.7s ease, z-index 0.7s ease;
+        }
+            .overlapping img:hover {
+                transform: scale(1.05);
+                z-index: 10;
+            }
+
+        .overlapping img:nth-child(1) {
+                grid-row: 1 / span 4;
+                grid-column: 1 / span 2;
+                z-index: 2;
+            }
+
+        .overlapping img:nth-child(2) {
+                grid-row: 3 / span 4;
+                grid-column: 2 / span 2;
+            }
+
+        .overlapping img:nth-child(3) {
+                grid-row: 2 / span 3;
+                grid-column: 4 / span 2;
+            }
+
+        .overlapping img:nth-child(4) {
+                grid-row: 1 / span 2;
+                grid-column: 5 / span 2;
+                z-index: 2;
+            }
+
+        .overlapping img:nth-child(5) {
+                grid-row: 5 / span 2;
+                grid-column: 6 / span 2;
+                z-index: 2;
+            }
+
+
+    .video-section {
+        margin: 60px 0;
+        text-align: center;
+    }
+
+    .museum-info {
+        text-align: center;
+        font-size: 16px;
+        margin: 40px 0;
+    }
+
+    .museum-info p {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-size: 25px;
+            line-height: 1.5;
+    }
+
+    .ticket-section {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 20px 60px 20px;
+    }
+
+    .ticket-text {
+        flex: 2;
+        padding-right: 40px;
+    }
+
+    .ticket-text h2 {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 25px;
+            line-height: 30px;
+    }
+
+        .ticket-text p {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+    .buy-ticket-btn {
+        margin-top: 10px;
+        padding: 10px 40px;
+        border: 1px solid white;
+        background-color: transparent;
+        color: white;
+        cursor: pointer;
+        border-radius: 40px;
+        text-decoration: none; /* Прибираємо підкреслення */
+        transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+    }
+
+        .buy-ticket-btn:hover {
+            background-color: white;
+            color: black;
+        }
+
+    .museum-image img {
+        width: 800px;
+        height: auto;
+        border-radius: 8px;
+        transition: transform 0.5s ease, font-size 0.5s ease;
+    }
+
+        .museum-image img:hover {
+            transform: scale(1.05);
+        }
+</style>
+}

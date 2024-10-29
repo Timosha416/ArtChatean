@@ -1,0 +1,188 @@
+﻿@using System.Globalization
+@model List<ArtChatean.Models.Event>
+
+@{
+    Layout = "_MainLayout";
+}
+
+<div class="title-block">
+    <h1 class="page-title">Date and Time</h1>
+</div>
+
+@if (ViewBag.Message != null)
+{
+    <p>@ViewBag.Message</p> <!-- Виводимо повідомлення, якщо немає подій -->
+}
+else
+{
+    <div class="event-calendar">
+        @foreach (var eventItem in Model)
+        {
+            <div class="event-date-card">
+                <h3>@eventItem.EventDate.ToString("dd MMMM, yyyy", CultureInfo.GetCultureInfo("en-US"))</h3>
+                <div class="vector"></div>
+                <p class="event-description">@eventItem.Description</p> <!-- Опис події -->
+
+                <div class="time-slots">
+                    @foreach (var timeSlot in eventItem.TimeSlots)
+                    {
+                        <form asp-action="BookTicket" method="post">
+                            <input type="hidden" name="timeSlotId" value="@timeSlot.Id" />
+                            <a class="time-slot @(timeSlot.AvailableTickets > 0 ? "" : "disabled")"
+                               href="@Url.Action("TicketSelection", "Event", new { timeSlotId = timeSlot.Id })">
+                                @timeSlot.Time.ToString("HH:mm")
+                                <span>(Tickets left: @timeSlot.AvailableTickets)</span>
+                            </a>
+
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+@section HeadEnd {
+    <style>
+        /*  body {
+                background-color: #fff;
+                color: #333;
+            } */
+        .main {
+            width: 100%;
+            /* background: white; */
+        }
+
+        .page-title {
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Inter', sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 46px;
+            line-height: 73px;
+            color: #000000;
+            transition: transform 0.5s ease, font-size 0.5s ease;
+        }
+
+            .page-title:hover {
+            transform: scale(1.1);
+            font-size: 52px; /* Збільшення шрифту при наведенні */
+            }
+
+        .title-block {
+            background-image: url('/images/Beutiful picture.jpg');
+            padding: 25px;
+            height: 300px;
+            text-transform: uppercase;
+            margin: 0px -10px 20px -10px;
+            display: flex;
+            justify-content: center; /* горизонтальне центрування */
+            align-items: center; /* вертикальне центрування */
+        }
+
+        .event-calendar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .event-date-card {
+            background-color: transparent;
+            border: 1px solid #D9D9D9;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px 20px 20px 20px;
+            width: 320px;
+            transition: transform 0.3s ease;
+        }
+
+            .event-date-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .event-date-card h3 {
+                text-align: center;
+                font-family: 'Inter';
+                font-style: normal;
+                font-weight: 400;
+                font-size: 24px;
+                color: #fff;
+            }
+
+        .event-description {
+            text-align: center;
+            color: #7f8c8d;
+            margin: 10px 0 15px;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .vector {
+            text-align: center;
+            border: 1px solid #D9D9D9;
+            width: 315px;
+            height: 0px;
+        }
+
+        .time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .time-slot {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px 0;
+            background-color: transparent; /* Основний колір кнопки */
+            color: #fff;
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-size: 16px;
+            text-decoration: none; /* Прибираємо підкреслення */
+            border-radius: 40px; /* Закруглені кути */
+            border: 1px solid #fff; /* Без рамки, але додаємо для анімації */
+            transition: background-color 0.3s, border-color 0.3s, transform 0.3s; /* Анімація на hover */
+            cursor: pointer; /* Змінюємо курсор на руку */
+            text-align: center; /* Вирівнювання тексту по центру */
+        }
+
+            .time-slot:hover {
+                background-color: #fff;
+                color: #000000;
+                transform: scale(1.05); /* Легка анімація масштабування при наведенні */
+                font-weight: bold;
+            }
+
+            .time-slot span {
+                display: block;
+                font-size: 14px;
+                font-weight: normal;
+                margin-top: 5px; /* Відступ для кількості квитків */
+            }
+
+            .time-slot.disabled {
+                background-color: gray;
+                pointer-events: none; /* Вимикаємо взаємодію */
+                cursor: not-allowed; /* Курсор для неактивних */
+                border-color: gray;
+            }
+
+                .time-slot.disabled:hover {
+                    transform: none; /* Вимикаємо анімацію для недоступних */
+                }
+
+
+        .ticket-info {
+            display: block;
+            font-size: 12px;
+            margin-top: 5px;
+            color: #ecf0f1;
+        }
+    </style>
+}

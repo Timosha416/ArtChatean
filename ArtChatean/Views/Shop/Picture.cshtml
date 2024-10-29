@@ -1,0 +1,337 @@
+﻿@using ArtChatean.Models;
+@*
+
+*@
+@model Picture
+@{
+    Layout = "_MainLayout";
+}
+<div class="image-details">
+    <div class="main-image">
+        @if (Model.Image != null && Model.Image.Length > 0)
+        {
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Image)" alt="@Model.Title" />
+        }
+        else
+        {
+            <img src="#" alt="Profile Image" />
+        }
+    </div>
+    <div class="details">
+        <div class="artist">
+            <a href="@Url.Action("FriendProfile", "Main", new { id = Model.UserId })" class="username-link">
+            @if (Model.User.Image != null && Model.User.Image.Length > 0)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.User.Image)" alt="@Model.User.FullName" />
+            }
+            else
+            {
+                <img src="#" alt="Profile Image" />
+            }
+            </a>
+            <div class="artist-name">
+                <a href="@Url.Action("FriendProfile", "Main", new { id = Model.UserId })" class="username-link">@Model.User.FullName</a>
+            </div>
+        </div>
+        <div class="title">@Model.Title</div>
+        <div class="price">@Model.Price?.ToString("0.00") $</div>
+        <div class="description">@Model.Description</div>
+        <div class="size-option">@Model.Size</div>
+        <div class="buttons">
+            <a href="#"
+               class="add-to-order @(Model.PictureOrders.Any(po => po.Order.CustomerId == ViewBag.currentUserId || po.Order.IsCompleted == true) ? "disabled" : "")"
+               title="@(Model.PictureOrders.Any(po => po.Order.CustomerId == ViewBag.currentUserId) ? "Added to order" : "Buy")"
+               data-id="@Model.Id"
+               onclick="buyPicture(this); return false;">
+                <i class="fa @(Model.PictureOrders.Any(po => po.Order.CustomerId == ViewBag.currentUserId || po.Order.IsCompleted == true) ? "fa-check" : "fa-shopping-cart")"></i>
+                @{
+                    if (Model.PictureOrders.Any(po => po.Order.IsCompleted == true))
+                    {
+                        <text>Sold</text>
+                    }
+                    else if (Model.PictureOrders.Any(po => po.Order.CustomerId == ViewBag.currentUserId))
+                    {
+                        <text>Added</text>
+                    }
+
+                    else
+                    {
+                        <text>Add to order</text>
+                    }
+                }
+            </a>
+            @* <button class="buy-now">Buy now</button> *@
+        </div>
+    </div>
+</div>
+<h2>Other pictures by the author</h2>
+<div class="other-images-container">
+    @foreach (var picture in Model.User.Pictures.Where(p => p.IsForSale && !p.IsSold && p.Id != Model.Id))
+    {
+        <a href="/Shop/Picture/@picture.Id" class="other-image-link">
+            <div class="other-image">
+                <div class="image">
+                    @if (picture.Image != null && picture.Image.Length > 0)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(picture.Image)" alt="@picture.Title" />
+                    }
+                    else
+                    {
+                        <img src="#" alt="Profile Image" />
+                    }
+                </div>
+                <div class="gallery-info">
+                    <p style="float: left;">@picture.Title</p>
+                    <p style="float: right;">$@picture.Price</p>
+                </div>
+            </div>
+        </a>
+    }
+</div>
+
+<script>
+    function buyPicture(element) {
+        var pictureId = element.getAttribute('data-id');
+
+        // Виконуємо запит на сервер
+        fetch('/Order/AddToOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: pictureId
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Блокуємо кнопку після успішного додавання до кошику
+                    element.classList.add('disabled');
+                    element.setAttribute('title', 'Added to order');
+                    var icon = element.querySelector('i');
+                    icon.classList.remove('fa-shopping-cart');
+                    icon.classList.add('fa-check');
+                    element.innerHTML = '<i class="fa fa-check"></i> Added'; // Оновлюємо текст кнопки
+                } else {
+                    alert("Failed to add picture to order.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred.");
+            });
+    }
+</script>
+
+@section HeadEnd {
+    <style>
+        .main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        /* ІНФОРМАЦІЯ ПРО КАРТИНУ */
+        .image-details {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            flex: 2;
+            gap: 30px;
+            margin: 20px;
+        }
+
+        /* ЗОБРАЖЕННЯ */
+        .main-image {
+            flex: 1;
+            background-color: #ccc;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border: 2px solid white;
+        }
+
+        .username-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .username-link:hover {
+                text-decoration: underline; /* Підкреслення при наведенні */
+            }
+
+        /* ДЕТАЛІ ЗОБРАЖЕННЯ */
+        .details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .artist {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            font-size: 20px;
+            gap: 10px;
+        }
+
+            .artist img {
+                width: 40px;
+                height: 40px;
+                background-color: #ccc;
+                border-radius: 50%;
+                border: 2px solid white;
+            }
+
+        .artist-name {
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .price {
+            font-size: 24px;
+        }
+
+        .description {
+            font-size: 16px;
+            border-top: 1px solid white;
+        }
+
+        .size-option {
+            margin-bottom: 20px;
+        }
+
+        /* КЛАВІША ДОДАТИ ДО ОРДЕРУ */
+        .buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .add-to-order {
+            display: inline-block;
+            background-color: white;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+            .add-to-order i {
+                margin-right: 10px;
+            }
+
+            .add-to-order:hover {
+                background-color: green;
+            }
+
+            .add-to-order.disabled {
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+
+        .buy-now {
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* БЛОК ІНШИХ КАРТИН КОРИСТУВАЧА */
+
+        .other-images-container {
+            display: flex;
+            flex: 1;
+            box-sizing: border-box;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 95%;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .other-image-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+            .other-image-link:hover {
+                opacity: 0.6;
+                transition: opacity 0.3s ease-in-out;
+            }
+        /* Стилі для браузерів на основі WebKit (Chrome, Safari) */
+        .other-images-container::-webkit-scrollbar {
+            height: 4px; /* Висота смуги прокрутки */
+        }
+
+        .other-images-container::-webkit-scrollbar-track {
+            background-color: white; /* Колір фону смуги */
+            border-radius: 10px;
+        }
+
+        .other-images-container::-webkit-scrollbar-thumb {
+            background-color: black; /* Колір "повзунка" */
+            border-radius: 10px;
+        }
+
+            .other-images-container::-webkit-scrollbar-thumb:hover {
+                background-color: black; /* Колір "повзунка" при наведенні */
+            }
+
+        /* Для Firefox */
+        .other-images-container {
+            scrollbar-color: black white; /* Колір повзунка і фону */
+            scrollbar-width: thin; /* Товщина смуги прокрутки */
+        }
+
+        .other-image {
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            margin: 10px 0;
+            gap: 10px;
+        }
+
+        .image {
+            width: 100%;
+            height: 90%;
+        }
+
+            .image img {
+                width: 300px;
+                height: 300px;
+                object-fit: cover;
+                display: block;
+            }
+
+        .gallery-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            height: 10%;
+        }
+
+            .gallery-info p {
+                margin: 0px;
+                padding: 0px;
+            }
+
+    </style>
+}
+

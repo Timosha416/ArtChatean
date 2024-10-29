@@ -1,0 +1,6 @@
+C:\Users\timos\source\repos\ArtChatean\ArtChatean\bin\Release\net8.0\win-x64\publish\appsettings.Development.json
+C:\Users\timos\source\repos\ArtChatean\ArtChatean\bin\Release\net8.0\win-x64\publish\appsettings.json
+C:\Users\timos\source\repos\ArtChatean\ArtChatean\bin\Release\net8.0\win-x64\publish\ArtChatean.pdb
+C:\Users\timos\source\repos\ArtChatean\ArtChatean\bin\Release\net8.0\win-x64\publish\aspnetcorev2_inprocess.dll
+C:\Users\timos\source\repos\ArtChatean\ArtChatean\bin\Release\net8.0\win-x64\publish\e_sqlite3.dll
+C:\Users\timos\source\repos\ArtChatean\ArtChatean\bin\Release\net8.0\win-x64\publish\ArtChatean.exe
